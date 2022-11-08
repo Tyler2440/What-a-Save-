@@ -1,0 +1,17 @@
+body {
+    display: block;
+}
+
+main {
+    display: block;
+}
+
+.carousel-item {
+    max-height: 400px;
+    min-width: auto;
+    object-fit: contain;
+}
+
+.carousel-caption {
+    color:blueviolet;
+}
