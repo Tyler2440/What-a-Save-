@@ -38,29 +38,65 @@
     </nav>
 
     <div id="page-header"> </div>
+    <div class="scrollable">
+        <table id="player-table">
+            <thead style="position: sticky; top: 0; background-color: gray; color: white;">
+                <tr id="column-headers">
+                    <th id="game-header">
+                        Game
+                        <i class="fas no-display"></i>
+                    </th>
+                    <th id="wl-header">
+                        W/L
+                        <i class="fas no-display"></i>
+                    </th>
+                    <th id="goals-header">
+                        Goals
+                        <i class="fas no-display"></i>
+                    </th>
+                    <th id="assists-header">
+                        Assists
+                        <i class="fas no-display"></i>
+                    </th>
+                    <th id="saves-header">
+                        Saves
+                        <i class="fas no-display"></i>
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody id="table-body">
+
+            </tbody>
+            
+        </table>
+    </div>
     
-    <table id="player-table">
-        <thead>
-            <tr id="column-headers">
-                <th id="game-header">
-                    Game
-                    <i class="fas no-display"></i>
+    <svg id="bubble-chart"></svg>
+
+    <table id="orange-table" class="scoreboard">
+        <thead style="position: sticky; top: 0; background-color: white; color: black;">
+            <tr id="orange-column-headers" class="scoreboard-headers">
+                <th id="player-orange-header">
+                    Player
                 </th>
-                <th id="wl-header">
-                    W/L
-                    <i class="fas no-display"></i>
+                <th id="score-orange-header">
+                    Score
                 </th>
-                <th id="goals-header">
+                <th id="goals-orange-header">
                     Goals
-                    <i class="fas no-display"></i>
                 </th>
-                <th id="assists-header">
+                <th id="assists-orange-header">
                     Assists
-                    <i class="fas no-display"></i>
                 </th>
-                <th id="saves-header">
+                <th id="saves-orange-header">
                     Saves
-                    <i class="fas no-display"></i>
+                </th>
+                <th id="shots-orange-header">
+                    Shots
+                </th>
+                <th id="demos-orange-header">
+                    Demos
                 </th>
             </tr>
         </thead>
@@ -68,14 +104,47 @@
         <tbody id="table-body">
 
         </tbody>
+        
     </table>
 
-    
-    <svg id="bubble-chart"></svg>
-    <svg id="scoreboard"></svg>
+    <table id="blue-table" class="scoreboard">
+        <thead style="position: sticky; top: 0; background-color: white; color: black;">
+            <tr id="blue-column-headers" class="scoreboard-headers">
+                <th id="player-blue-header">
+                    Player
+                </th>
+                <th id="score-blue-header">
+                    Score
+                </th>
+                <th id="goals-blue-header">
+                    Goals
+                </th>
+                <th id="assists-blue-header">
+                    Assists
+                </th>
+                <th id="saves-blue-header">
+                    Saves
+                </th>
+                <th id="shots-blue-header">
+                    Shots
+                </th>
+                <th id="demos-blue-header">
+                    Demos
+                </th>
+            </tr>
+        </thead>
+    <!-- <svg id="game-visualizations"> </svg> -->
+    <div id="game-visualizations"> </div>
 
-    <svg id="game-visualizations"> </svg>
     
-    
+    <div>
+        <hr>
+        <footer class="text-muted" style="float:left; position: fixed; bottom: 0;">
+            <div class="container">       
+            <p>What a Save! project for CS5630 by Tyler Allen and Dallon Haley</p>
+            <p class="float-top"><a href="#">Back to top</a></p>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>

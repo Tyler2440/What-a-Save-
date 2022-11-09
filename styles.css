@@ -22,17 +22,21 @@ main {
 }
 
 #player-table {
-    height: 800px;
-    width: 50%;
+    height: 650px;
+    width: 790px;
     float: left;
     table-layout: fixed;
     border-style: solid;
     background-color: lightgray;
+    
 }
 
-tbody {
-    max-height: 800px;
-    overflow: auto;
+.scrollable {
+    float: left;
+    display: inline;
+    width: 820px;
+    max-height: 650px;
+    overflow-y: auto;
 }
 
 #table-headers {
@@ -43,6 +47,7 @@ tbody {
     height: 800px;
     width: 45%;
     float: right;
+    position: sticky;
     background-color: aqua;
     padding: 5%
 }
@@ -51,18 +56,35 @@ tbody {
     height: 350px;
     width: 45%;
     float: right;
+    position: sticky;
+    display: block;
     background-color: aqua;
     margin-right:2.5%;
     margin-top: 50px;
 }
 
-#scoreboard {
-    height: 350px;
+.scoreboard {
+    height: 100px;
     width: 45%;
     float: right;
-    background-color: orange;
-    margin-top: 50px;
+    position: relative;
+    display: block; 
     margin-right:2.5%;
+}
+
+#orange-table {
+    background-color: orange;
+    margin-top: 40px;
+    margin-bottom: 0;
+}
+
+#blue-table {
+    background-color:rgb(69, 69, 231);
+    margin-top: 10px;
+}
+
+.scoreboard-headers {
+    width: 20px;
 }
 
 /* #game-visualizations {
@@ -72,4 +94,8 @@ tbody {
     background-color: green;
     position: absolute;
 } */
+
+.selected {
+    background-color:lightsteelblue !important;
+}
 

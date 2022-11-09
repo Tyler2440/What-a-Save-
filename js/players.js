@@ -94,21 +94,199 @@ class Players {
         let trs = d3.select('#table-body')
             .selectAll('tr')
             .data(playerData)
-            .join("tr");
+            .join("tr")
+            .on("mouseover", function() {
+                console.log(this);
+                let row = d3.select(this).select("svg");
 
-        // // add table data data
-        // let tds = trs.selectAll('td')
-        //     .data(this.rowToCellDataTransform)
-        //     .join('td')
+                row.style("background-color", "white");
+            })
+            .on("mouseout", function() {
+                let row = d3.select(this).select("svg");
+                row.style("background-color", "lightgray");
+            })
+            .on("click", this.FillScoreBoard);
+        
+        // Add a td in each tr
+        let rowSelection = trs.selectAll("td")
+        .data(d => [d])
+        .join("td");
 
-        // Set up text cells
-        // let textSelection = tds.filter(d => d.type === 'text')
-        // textSelection.selectAll("tr")
-        //     .data(d => [d])
-        //     .join("text")
-        //     .text(d => (d.value))
+        // Add an svg in each td
+        let svgSelect = rowSelection.selectAll("svg")
+        .data(d => [d])
+        .join("svg")
+        .attr("width", 783)
+        .attr("height", 30);
+
+        // Format the dates in format m/d/y h:mm AM/PM (ex. 11/1/22 12:15 PM)
+        let dateFormat = d3.timeFormat("%m/%d/%y %I:%M %p");
+
+        // Add the game date/time
+        svgSelect
+        .data(d => [d])
+        .append("text")
+        .text(function(d) {
+            let gameDate = Date.parse(d["date"]);
+            return dateFormat(gameDate);
+        })
+        .attr("transform", "translate(0,15)")
+        .style("font-size", "14px");
+
+        // Add the game W/L
+        svgSelect
+        .data(d => [d])
+        .append("text")
+        .text(function(d) {
+            let onBlue = false;
+            d["blue"]["players"].forEach(function(player) {
+                if (player["name"] == playerName)
+                {
+                    onBlue = true;
+                }
+            });
+
+            let orangeGoals = d["orange"]["stats"]["core"]["goals"];
+            let blueGoals = d["blue"]["stats"]["core"]["goals"];
+
+            if (onBlue)
+            {
+                if (blueGoals > orangeGoals)
+                {
+                    return "W";
+                }
+                else
+                {
+                    return "L";
+                }
+            }
+            else
+            {
+                if (orangeGoals > blueGoals)
+                {
+                    return "W";
+                }
+                else
+                {
+                    return "L";
+                }
+            }
+            
+        })
+        .attr("transform", "translate(175,15)")
+        .style("font-size", "15px")
+        .style("text-anchor", "middle");
+
+        // Add player goals
+        svgSelect
+        .data(d => [d])
+        .append("text")
+        .text(function(d) {
+            let playerGameData = null;
+            let orangePlayers = d["orange"]["players"];
+
+            orangePlayers.forEach(function(player) {
+                if (player["name"] == playerName)
+                {
+                    playerGameData = player;
+                }
+            });
+
+            if (playerGameData == null)
+            {
+                let bluePlayers = d["blue"]["players"];
+
+                bluePlayers.forEach(function(player) {
+                    if (player["name"] == playerName)
+                    {
+                        playerGameData = player;
+                    }
+                });
+            }
+
+            return playerGameData["stats"]["core"]["goals"];
+        })
+        .attr("transform", "translate(335,15)")
+        .style("font-size", "15px")
+        .style("text-anchor", "middle");
+
+        // Add player assists
+        svgSelect
+        .data(d => [d])
+        .append("text")
+        .text(function(d) {
+            let playerGameData = null;
+            let orangePlayers = d["orange"]["players"];
+
+            orangePlayers.forEach(function(player) {
+                if (player["name"] == playerName)
+                {
+                    playerGameData = player;
+                }
+            });
+
+            if (playerGameData == null)
+            {
+                let bluePlayers = d["blue"]["players"];
+
+                bluePlayers.forEach(function(player) {
+                    if (player["name"] == playerName)
+                    {
+                        playerGameData = player;
+                    }
+                });
+            }
+
+            return playerGameData["stats"]["core"]["assists"];
+        })
+        .attr("transform", "translate(500,15)")
+        .style("font-size", "15px")
+        .style("text-anchor", "middle");
+
+        // Add player saves
+        svgSelect
+        .data(d => [d])
+        .append("text")
+        .text(function(d) {
+            let playerGameData = null;
+            let orangePlayers = d["orange"]["players"];
+
+            orangePlayers.forEach(function(player) {
+                if (player["name"] == playerName)
+                {
+                    playerGameData = player;
+                }
+            });
+
+            if (playerGameData == null)
+            {
+                let bluePlayers = d["blue"]["players"];
+
+                bluePlayers.forEach(function(player) {
+                    if (player["name"] == playerName)
+                    {
+                        playerGameData = player;
+                    }
+                });
+            }
+
+            return playerGameData["stats"]["core"]["saves"];
+        })
+        .attr("transform", "translate(650,15)")
+        .style("font-size", "15px")
+        .style("text-anchor", "middle");
     }
 
+    FillScoreBoard() {
+        // Reset all "selected" elements 
+        d3.select("#player-table").selectAll(".selected").classed("selected", false);
+
+        // Update selected row color
+        let row = d3.select(this).select("svg");
+        row.classed("selected", true);
+
+
+    }
 
     // rowToCellDataTransform(d) {
     //     return [
