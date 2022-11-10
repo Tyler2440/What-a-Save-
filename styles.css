@@ -64,11 +64,10 @@ main {
 }
 
 .scoreboard {
-    height: 100px;
-    width: 45%;
+    height: 100%;
+    width: 800px;
     float: right;
-    position: relative;
-    display: block; 
+    table-layout: fixed;
     margin-right:2.5%;
 }
 
@@ -83,19 +82,28 @@ main {
     margin-top: 10px;
 }
 
-.scoreboard-headers {
-    width: 20px;
+.scoreboard-headers > th{
+    width: 16%;
 }
 
-/* #game-visualizations {
-    width: 100%;
+.scoreboard tr {
+    border: solid;
+    border-width: 1px 0;
+}
+
+#game-visualizations {
+    width: 1000px;
     height: 400px;
-    margin: 50px;
     background-color: green;
-    position: absolute;
-} */
+    display: flex;
+}
 
 .selected {
     background-color:lightsteelblue !important;
+}
+
+.sorting {
+    background-color: lightgray;
+    color:black;
 }
 

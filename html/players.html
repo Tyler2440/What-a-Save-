@@ -8,6 +8,8 @@
     <!-- CSS -->
     <link rel="stylesheet" href="/styles.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
 
     <!-- Bootstrap/Bootstrap CSS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -42,23 +44,23 @@
         <table id="player-table">
             <thead style="position: sticky; top: 0; background-color: gray; color: white;">
                 <tr id="column-headers">
-                    <th id="game-header">
+                    <th class="sortable">
                         Game
                         <i class="fas no-display"></i>
                     </th>
-                    <th id="wl-header">
+                    <th class="sortable">
                         W/L
                         <i class="fas no-display"></i>
                     </th>
-                    <th id="goals-header">
+                    <th class="sortable">
                         Goals
                         <i class="fas no-display"></i>
                     </th>
-                    <th id="assists-header">
+                    <th class="sortable">
                         Assists
                         <i class="fas no-display"></i>
                     </th>
-                    <th id="saves-header">
+                    <th class="sortable">
                         Saves
                         <i class="fas no-display"></i>
                     </th>
@@ -80,13 +82,13 @@
                 <th id="player-orange-header">
                     Player
                 </th>
-                <th id="score-orange-header">
+                <th id="score-orange-header" style="padding-left: 45px;">
                     Score
                 </th>
-                <th id="goals-orange-header">
+                <th id="goals-orange-header" style="padding-left: 30px;">
                     Goals
                 </th>
-                <th id="assists-orange-header">
+                <th id="assists-orange-header" style="padding-left: 13px;">
                     Assists
                 </th>
                 <th id="saves-orange-header">
@@ -101,9 +103,7 @@
             </tr>
         </thead>
 
-        <tbody id="table-body">
-
-        </tbody>
+        <tbody id="orange-table-body">  </tbody>
         
     </table>
 
@@ -133,18 +133,10 @@
                 </th>
             </tr>
         </thead>
-    <!-- <svg id="game-visualizations"> </svg> -->
-    <div id="game-visualizations"> </div>
-
-    
-    <div>
-        <hr>
-        <footer class="text-muted" style="float:left; position: fixed; bottom: 0;">
-            <div class="container">       
-            <p>What a Save! project for CS5630 by Tyler Allen and Dallon Haley</p>
-            <p class="float-top"><a href="#">Back to top</a></p>
-            </div>
-        </footer>
-    </div>
+        <tbody id="blue-table-body"></tbody>
+    </table>
+    <!-- <div id="game-visualizations">
+        <svg> </svg>
+    </div> -->
 </body>
 </html>
