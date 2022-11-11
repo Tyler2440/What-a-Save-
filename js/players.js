@@ -85,6 +85,7 @@ class Players {
         // When any of the headers are clicked
         headers.selectAll("th")
         .on("click", (d) => {
+            let playerName = d3.select("#player-select  option:checked").property("label");
             // Set all column as not the sorting column
             d3.selectAll("th").classed("sorting", false); // ***
             // Reset the "i" element; essentially add no-display and remove sort-down and sort-up icons so they don't display
@@ -92,12 +93,13 @@ class Players {
 
             if (d['srcElement'].innerText == "Game ")
             {          
+                let source = d3.select(d.srcElement);
+                source.classed("sorting", true);
+                let i = source.select("i");
                 // If this column is in ascending order     
                 if (this.headerData[0].ascending)
                 {
                     this.data.sort((x, y) => x["date"] < y["date"] ? 1 : -1); // Sort the data
-                    let source = d3.select(d.srcElement); // Get the table header element we clicked on                  
-                    let i = source.select("i"); // Grab the "i" element
                     i.classed("no-display", false); // Remove the "no-display" class
                     i.classed("fa-solid fa-sort-down", false); // Add the sort up icon
                     i.classed("fa-solid fa-sort-up", true); // Remove the sort up button
@@ -105,8 +107,6 @@ class Players {
                 else
                 {                    
                     this.data.sort((x, y) => x["date"] < y["date"] ? -1 : 1); // Sort the data
-                    let source = d3.select(d.srcElement); // Get the table header element we clicked on               
-                    let i = source.select("i"); // Grab the "i" element
                     i.classed("no-display", false); // Remove the "no-display" class
                     i.classed("fa-solid fa-sort-up", false); // Remove the sort up icon
                     i.classed("fa-solid fa-sort-down", true); // Add the sort up button
@@ -121,7 +121,54 @@ class Players {
                 // If this column is in ascending order
                 if (this.headerData[1].ascending)
                 {           
-                    this.data.sort((x, y) => x["blue"]["stats"]["core"]["goals"] > y["orange"]["stats"]["core"]["goals"] ? 1 : -1); // Sort the data
+                    this.data.sort(function(x, y) {
+                            let isOrangeX = false;
+                            let isOrangeY = false;
+
+                            // Gets whether player was orange in game x
+                            x["orange"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    isOrangeX = true;
+                                }
+                            });
+                            // Gets whether player was orange in game y
+                            y["orange"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    isOrangeY = true;
+                                }
+                            });
+
+                            // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                            if(isOrangeX && !isOrangeY)
+                            {
+                                return (x["orange"]["stats"]["core"]["goals"] > x["blue"]["stats"]["core"]["goals"]) &&
+                                (y["blue"]["stats"]["core"]["goals"] < y["orange"]["stats"]["core"]["goals"]) ? 1 : -1;
+                            }
+                            // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                            else if(!isOrangeX && isOrangeY)
+                            {
+                                return (x["orange"]["stats"]["core"]["goals"] < x["blue"]["stats"]["core"]["goals"]) &&
+                                (y["blue"]["stats"]["core"]["goals"] > y["orange"]["stats"]["core"]["goals"]) ? 1 : -1;
+                            }
+                            // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                            else if(!isOrangeX && !isOrangeY)
+                            {
+                                return (x["orange"]["stats"]["core"]["goals"] < x["blue"]["stats"]["core"]["goals"]) &&
+                                (y["blue"]["stats"]["core"]["goals"] < y["orange"]["stats"]["core"]["goals"]) ? 1 : -1;
+                            }
+                            // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                            else if (isOrangeX && isOrangeY)
+                            {
+                                return (x["orange"]["stats"]["core"]["goals"] > x["blue"]["stats"]["core"]["goals"]) &&
+                                (y["blue"]["stats"]["core"]["goals"] > y["orange"]["stats"]["core"]["goals"]) ? 1 : -1;
+                            }
+
+                            // Unreachable
+                            return -1;
+                    });
+                    // Sort the data
                     // Get this element and set it to sorting column
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-down", false);
@@ -129,33 +176,211 @@ class Players {
                 }
                 else
                 {
-                    this.data.sort((x, y) => x["blue"]["stats"]["core"]["goals"] > y["orange"]["stats"]["core"]["goals"] ? -1 : 1);      
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let isOrangeY = false;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                            }
+                        });
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return (x["orange"]["stats"]["core"]["goals"] > x["blue"]["stats"]["core"]["goals"]) &&
+                            (y["blue"]["stats"]["core"]["goals"] < y["orange"]["stats"]["core"]["goals"]) ? -1 : 1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return (x["orange"]["stats"]["core"]["goals"] < x["blue"]["stats"]["core"]["goals"]) &&
+                            (y["blue"]["stats"]["core"]["goals"] > y["orange"]["stats"]["core"]["goals"]) ? -1 : 1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return (x["orange"]["stats"]["core"]["goals"] < x["blue"]["stats"]["core"]["goals"]) &&
+                            (y["blue"]["stats"]["core"]["goals"] < y["orange"]["stats"]["core"]["goals"]) ? -1 : 1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return (x["orange"]["stats"]["core"]["goals"] > x["blue"]["stats"]["core"]["goals"]) &&
+                            (y["blue"]["stats"]["core"]["goals"] > y["orange"]["stats"]["core"]["goals"]) ? -1 : 1;
+                        }
+
+                        // Unreachable
+                        return 1;
+                });      
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-up", false);
                     i.classed("fa-solid fa-sort-down", true);         
                 }
-                console.log(this.data);
+
                 this.headerData[1].ascending = !this.headerData[1].ascending;
             }
             else if (d['srcElement'].innerText == "Goals ")
             {
+                let source = d3.select(d.srcElement);
+                source.classed("sorting", true);
+                let i = source.select("i");
                 // If this column is in ascending order
                 if (this.headerData[2].ascending)
                 {                    
-                    this.data.sort((x, y) => x.percent_of_d_speeches < y.percent_of_d_speeches ? 1 : -1); // Sort the data
-                    // Get this element and set it to sorting column
-                    let source = d3.select(d.srcElement);
-                    let i = source.select("i");
-                    i.classed("no-display", false);
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let orangeGoalsX = 0;
+                        let blueGoalsX = 0;
+                        let isOrangeY = false;
+                        let orangeGoalsY = 0;
+                        let blueGoalsY = 0;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                                orangeGoalsX = player["stats"]["core"]["goals"];
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                                orangeGoalsY = player["stats"]["core"]["goals"];
+                            }
+                        });
+                        // Gets goals of player if they were blue in game X
+                        if (!isOrangeX && x["blue"]["players"] != undefined)
+                        {
+                            x["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueGoalsX = player["stats"]["core"]["goals"];
+                                }
+                            });
+                        }
+                        if (!isOrangeY && y["blue"]["players"] != undefined)
+                        {   
+                            // Gets goals of player if they were blue in game Y
+                            y["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueGoalsY = player["stats"]["core"]["goals"];
+                                }
+                            });
+                        }
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return orangeGoalsX > blueGoalsY ? 1 : -1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return blueGoalsX > orangeGoalsY ? 1 : -1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return blueGoalsX > blueGoalsY ? 1 : -1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return orangeGoalsX > orangeGoalsY ? 1 : -1;
+                        }
+
+                        // Unreachable
+                        return -1;
+                });
                     i.classed("fa-solid fa-sort-down", false);
                     i.classed("fa-solid fa-sort-up", true);
                 }
                 else
                 {
-                    this.data.sort((x, y) => x.percent_of_d_speeches < y.percent_of_d_speeches ? -1 : 1); 
-                    let source = d3.select(d.srcElement);
-                    source.classed("sorting", true);
-                    let i = source.select("i");
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let orangeGoalsX = 0;
+                        let blueGoalsX = 0;
+                        let isOrangeY = false;
+                        let orangeGoalsY = 0;
+                        let blueGoalsY = 0;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                                orangeGoalsX = player["stats"]["core"]["goals"];
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                                orangeGoalsY = player["stats"]["core"]["goals"];
+                            }
+                        });
+                        // Gets goals of player if they were blue in game X
+                        if (!isOrangeX && x["blue"]["players"] != undefined)
+                        {
+                            x["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueGoalsX = player["stats"]["core"]["goals"];
+                                }
+                            });
+                        }
+                        if (!isOrangeY && y["blue"]["players"] != undefined)
+                        {   
+                            // Gets goals of player if they were blue in game Y
+                            y["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueGoalsY = player["stats"]["core"]["goals"];
+                                }
+                            });
+                        }
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return orangeGoalsX > blueGoalsY ? -1 : 1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return blueGoalsX > orangeGoalsY ? -1 : 1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return blueGoalsX > blueGoalsY ? -1 : 1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return orangeGoalsX > orangeGoalsY ? -1 : 1;
+                        }
+
+                        // Unreachable
+                        return -1;
+                });
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-up", false);
                     i.classed("fa-solid fa-sort-down", true);       
@@ -165,23 +390,156 @@ class Players {
             }
             else if (d['srcElement'].innerText == "Assists ")
             {
+                let source = d3.select(d.srcElement);
+                source.classed("sorting", true);
+                let i = source.select("i");
                 // If this column is in ascending order
                 if (this.headerData[3].ascending)
                 {                   
-                    this.data.sort((x, y) => x.total < y.total ? 1 : -1); // Sort the data
-                    // Get this element and set it to sorting column
-                    let source = d3.select(d.srcElement);
-                    let i = source.select("i");
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let orangeAssistsX = 0;
+                        let blueAssistsX = 0;
+                        let isOrangeY = false;
+                        let orangeAssistsY = 0;
+                        let blueAssistsY = 0;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                                orangeAssistsX = player["stats"]["core"]["assists"];
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                                orangeAssistsY = player["stats"]["core"]["assists"];
+                            }
+                        });
+                        // Gets goals of player if they were blue in game X
+                        if (!isOrangeX && x["blue"]["players"] != undefined)
+                        {
+                            x["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueAssistsX = player["stats"]["core"]["assists"];
+                                }
+                            });
+                        }
+                        if (!isOrangeY && y["blue"]["players"] != undefined)
+                        {   
+                            // Gets goals of player if they were blue in game Y
+                            y["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueAssistsY = player["stats"]["core"]["assists"];
+                                }
+                            });
+                        }
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return orangeAssistsX > blueAssistsY ? 1 : -1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return blueAssistsX > orangeAssistsY ? 1 : -1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return blueAssistsX > blueAssistsY ? 1 : -1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return orangeAssistsX > orangeAssistsY ? 1 : -1;
+                        }
+
+                        // Unreachable
+                        return -1;
+                });
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-down", false);
                     i.classed("fa-solid fa-sort-up", true);
                 }
                 else
                 {
-                    this.data.sort((x, y) => x.total < y.total ? -1 : 1); 
-                    let source = d3.select(d.srcElement);
-                    source.classed("sorting", true);
-                    let i = source.select("i");
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let orangeAssistsX = 0;
+                        let blueAssistsX = 0;
+                        let isOrangeY = false;
+                        let orangeAssistsY = 0;
+                        let blueAssistsY = 0;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                                orangeAssistsX = player["stats"]["core"]["assists"];
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                                orangeAssistsY = player["stats"]["core"]["assists"];
+                            }
+                        });
+                        // Gets goals of player if they were blue in game X
+                        if (!isOrangeX && x["blue"]["players"] != undefined)
+                        {
+                            x["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueAssistsX = player["stats"]["core"]["assists"];
+                                }
+                            });
+                        }
+                        if (!isOrangeY && y["blue"]["players"] != undefined)
+                        {   
+                            // Gets goals of player if they were blue in game Y
+                            y["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueAssistsY = player["stats"]["core"]["assists"];
+                                }
+                            });
+                        }
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return orangeAssistsX > blueAssistsY ? -1 : 1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return blueAssistsX > orangeAssistsY ? -1 : 1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return blueAssistsX > blueAssistsY ? -1 : 1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return orangeAssistsX > orangeAssistsY ? -1 : 1;
+                        }
+
+                        // Unreachable
+                        return -1;
+                }); 
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-up", false);
                     i.classed("fa-solid fa-sort-down", true);         
@@ -191,23 +549,156 @@ class Players {
             }
             else if (d['srcElement'].innerText == "Saves ")
             {
+                let source = d3.select(d.srcElement);
+                source.classed("sorting", true);
+                let i = source.select("i");
                 // If this column is in ascending order
                 if (this.headerData[3].ascending)
                 {                   
-                    this.data.sort((x, y) => x.total < y.total ? 1 : -1); // Sort the data
-                    // Get this element and set it to sorting column
-                    let source = d3.select(d.srcElement);
-                    let i = source.select("i");
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let orangeSavesX = 0;
+                        let blueSavesX = 0;
+                        let isOrangeY = false;
+                        let orangeSavesY = 0;
+                        let blueSavesY = 0;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                                orangeSavesX = player["stats"]["core"]["saves"];
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                                orangeSavesY = player["stats"]["core"]["saves"];
+                            }
+                        });
+                        // Gets goals of player if they were blue in game X
+                        if (!isOrangeX && x["blue"]["players"] != undefined)
+                        {
+                            x["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueSavesX = player["stats"]["core"]["saves"];
+                                }
+                            });
+                        }
+                        if (!isOrangeY && y["blue"]["players"] != undefined)
+                        {   
+                            // Gets goals of player if they were blue in game Y
+                            y["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueSavesY = player["stats"]["core"]["saves"];
+                                }
+                            });
+                        }
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return orangeSavesX > blueSavesY ? 1 : -1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return blueSavesX > orangeSavesY ? 1 : -1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return blueSavesX > blueSavesY ? 1 : -1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return orangeSavesX > orangeSavesY ? 1 : -1;
+                        }
+
+                        // Unreachable
+                        return -1;
+                });
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-down", false);
                     i.classed("fa-solid fa-sort-up", true);
                 }
                 else
                 {
-                    this.data.sort((x, y) => x.total < y.total ? -1 : 1); 
-                    let source = d3.select(d.srcElement);
-                    source.classed("sorting", true);
-                    let i = source.select("i");
+                    this.data.sort(function(x, y) {
+                        let isOrangeX = false;
+                        let orangeAssistsX = 0;
+                        let blueAssistsX = 0;
+                        let isOrangeY = false;
+                        let orangeAssistsY = 0;
+                        let blueAssistsY = 0;
+
+                        // Gets whether player was orange in game x
+                        x["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeX = true;
+                                orangeAssistsX = player["stats"]["core"]["saves"];
+                            }
+                        });
+                        // Gets whether player was orange in game y
+                        y["orange"]["players"].forEach(function(player) {
+                            if (player["name"] == playerName)
+                            {
+                                isOrangeY = true;
+                                orangeAssistsY = player["stats"]["core"]["saves"];
+                            }
+                        });
+                        // Gets goals of player if they were blue in game X
+                        if (!isOrangeX && x["blue"]["players"] != undefined)
+                        {
+                            x["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueAssistsX = player["stats"]["core"]["saves"];
+                                }
+                            });
+                        }
+                        if (!isOrangeY && y["blue"]["players"] != undefined)
+                        {   
+                            // Gets goals of player if they were blue in game Y
+                            y["blue"]["players"].forEach(function(player) {
+                                if (player["name"] == playerName)
+                                {
+                                    blueAssistsY = player["stats"]["core"]["saves"];
+                                }
+                            });
+                        }
+
+                        // If player is orange in X and blue in Y, check if orange won in X and orange won in Y
+                        if(isOrangeX && !isOrangeY)
+                        {
+                            return orangeAssistsX > blueAssistsY ? -1 : 1;
+                        }
+                        // If player is blue in X and orange in Y, check if blue won in X and blue won in Y
+                        else if(!isOrangeX && isOrangeY)
+                        {
+                            return blueAssistsX > orangeAssistsY ? -1 : 1;
+                        }
+                        // If player is blue in X and blue in Y, check if blue won in X and orange won in Y
+                        else if(!isOrangeX && !isOrangeY)
+                        {
+                            return blueAssistsX > blueAssistsY ? -1 : 1;
+                        }
+                        // If the player is orange on X and orange on Y, check if orange won in X and blue won in Y
+                        else if (isOrangeX && isOrangeY)
+                        {
+                            return orangeAssistsX > orangeAssistsY ? -1 : 1;
+                        }
+
+                        // Unreachable
+                        return -1;
+                }); 
                     i.classed("no-display", false);
                     i.classed("fa-solid fa-sort-up", false);
                     i.classed("fa-solid fa-sort-down", true);         
@@ -254,11 +745,13 @@ class Players {
     
                 if (players.includes(playerName))
                 {
-                    playerData.push(game);
+                    if (game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+                    {
+                        playerData.push(game);
+                    }       
                 }
             }
         });
-        
         // add table row data
         let trs = d3.select('#table-body')
             .selectAll('tr')
@@ -322,6 +815,10 @@ class Players {
                 if (blueGoals > orangeGoals)
                 {
                     return "W";
+                }
+                else if (blueGoals == orangeGoals)
+                {
+                    return "T";
                 }
                 else
                 {
