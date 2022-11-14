@@ -38,7 +38,7 @@ class Players {
 
         this.AddTableHeaders();
         this.AddSortingHandlers();
-        this.FillPlayersTable()
+        this.FillPlayersTable();
     }
 
     AddTableHeaders() {
@@ -61,7 +61,7 @@ class Players {
                 game["blue"]["players"].forEach(player => players.add(player["name"]));
             }
             
-            if (game["orange"]["players"] != undefined)
+            if (game["orange"]["players"] != undefined && game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
             {
                 game["orange"]["players"].forEach(player => players.add(player["name"]));
             }
@@ -71,12 +71,6 @@ class Players {
             playerSelect.append("option")
             .attr("label", player);
         });
-
-        svg.append("button")
-        .text("Filter")
-        .attr("id", "filter-table")
-        .style("margin-top", "50px")
-        .style("margin-left", "50px");
     }
 
     AddSortingHandlers() {
@@ -1035,7 +1029,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["saves"];
         })
-        .attr("transform", "translate(480,20)")
+        .attr("transform", "translate(470,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1046,7 +1040,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["shots"];
         })
-        .attr("transform", "translate(590,20)")
+        .attr("transform", "translate(563,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1057,11 +1051,13 @@ class Players {
         .text(function(d) {   
             return d["stats"]["demo"]["inflicted"];
         })
-        .attr("transform", "translate(710,20)")
+        .attr("transform", "translate(645,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
         globalApplicationState.players.FillBlueScoreBoard.call(this);
+        globalApplicationState.players.AddGameCoreStatsCharts.call(this);
+        globalApplicationState.players.AddButtonHandlers.call(this);
     }
 
     FillBlueScoreBoard() {
@@ -1157,7 +1153,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["saves"];
         })
-        .attr("transform", "translate(480,20)")
+        .attr("transform", "translate(470,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1168,7 +1164,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["shots"];
         })
-        .attr("transform", "translate(590,20)")
+        .attr("transform", "translate(563,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1179,8 +1175,493 @@ class Players {
         .text(function(d) {   
             return d["stats"]["demo"]["inflicted"];
         })
-        .attr("transform", "translate(710,20)")
+        .attr("transform", "translate(645,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
+    }
+
+    AddButtonHandlers() {
+        let coreButton = d3.select("#core-button");
+        let boostButton = d3.select("#boost-button");
+        let otherButton = d3.select("#other-button");
+
+        coreButton.on("click", globalApplicationState.players.AddGameCoreStatsCharts.call(this));
+        boostButton.on("click", globalApplicationState.players.AddBoostStatsCharts.call(this));
+        //coreButton.on("click", globalApplicationState.players.AddGameOtherStatsCharts.call(this));
+    }
+
+    AddGameCoreStatsCharts() {          
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Goals", "Shots", "Assists", "Saves"];
+
+        d3.select("#game-visualization-div").style("display", "");
+        d3.select("#stat-visualization-div").style("display", "");
+
+        d3.select("#players-bpm-stats").style("display", "none");
+        d3.select("#players-avg-boost-stats").style("display", "none");
+        d3.select("#team-bpm-stats").style("display", "none");
+        d3.select("#team-avg-boost-stats").style("display", "none");
+        d3.select("#boost-pads-stats").style("display", "none");
+
+        let svg = d3.select("#core-stats")
+        .attr("width", "1100px")
+        .attr("height", "430px");
+
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        // Orange
+        let orangeShotsData = gameData["orange"]["stats"]["core"]["shots"];
+        let orangeGoalsData = gameData["orange"]["stats"]["core"]["goals"];
+        let orangeAssistsData = gameData["orange"]["stats"]["core"]["assists"];
+        let orangeSavesData = gameData["orange"]["stats"]["core"]["saves"];
+
+        // Blue
+        let blueShotsData = gameData["blue"]["stats"]["core"]["shots"];
+        let blueGoalsData = gameData["blue"]["stats"]["core"]["goals"];
+        let blueAssistsData = gameData["blue"]["stats"]["core"]["assists"];
+        let blueSavesData = gameData["blue"]["stats"]["core"]["saves"];
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 1000])
+        .padding([0.2])
+        svg.append("g")
+        .attr("transform", "translate(30,410)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain(d3.extent([0,Math.max(orangeShotsData, Math.max(blueShotsData, Math.max(orangeSavesData, blueSavesData))) + 3]))
+        .range([ 400, 0 ]);
+        svg.append("g")
+        .attr("transform", "translate(30,10)")
+        .call(d3.axisLeft(y));
+
+        let orangeData = [];
+
+        orangeData.push({
+            key: "Goals",
+            value: orangeGoalsData
+        });
+        orangeData.push({
+            key: "Shots",
+            value: orangeShotsData
+        });
+        orangeData.push({
+            key: "Assists",
+            value: orangeAssistsData
+        });
+        orangeData.push({
+            key: "Saves",
+            value: orangeSavesData
+        });
+
+        svg.data(orangeData);
+
+        var xSubgroup = d3.scaleBand()
+        .domain(groups)
+        .range([0, 0]);
+
+        //Show the bars
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(orangeData)
+        .enter()
+        .append("g")
+            .attr("transform", function(d) { return "translate(" + (x(d.key)+40) + ",10)"; })
+        .selectAll("rect")
+        .data(d => [d])
+        .enter().append("rect")
+            .attr("x", function(d) { return xSubgroup(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", 75)
+            .attr("height", function(d) { return 400 - y(d.value); })
+            .attr("fill", function(d) { return "orange"; });
+
+        let blueData = [];
+
+        blueData.push({
+            key: "Goals",
+            value: blueGoalsData
+        });
+        blueData.push({
+            key: "Shots",
+            value: blueShotsData
+        });
+        blueData.push({
+            key: "Assists",
+            value: blueAssistsData
+        });
+        blueData.push({
+            key: "Saves",
+            value: blueSavesData
+        });
+
+        svg.data(blueData);
+
+        var xSubgroup = d3.scaleBand()
+        .domain(groups)
+        .range([0, 0]);
+
+        //Show the bars
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(blueData)
+        .enter()
+        .append("g")
+            .attr("transform", function(d) { console.log(d.key); return "translate(" + (x(d.key) + 140) + ",10)"; })
+        .selectAll("rect")
+        .data(d => [d])
+        .enter().append("rect")
+            .attr("x", function(d) { return xSubgroup(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", 75)
+            .attr("height", function(d) { return 400 - y(d.value); })
+            .attr("fill", function(d) { return "blue"; });
+
+        globalApplicationState.players.AddScoreChart.call(this);
+        globalApplicationState.players.AddShootingPercentageChart.call(this);
+        globalApplicationState.players.AddDemosChart.call(this);
+    }
+
+    AddScoreChart() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Orange", "Blue"];
+
+        let svg = d3.select("#score-stats")
+        .attr("width", "350px")
+        .attr("height", "500px");
+
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        svg.append("text")
+        .attr("x", 140)
+        .attr("y", 485)
+        .text("Score")
+
+        // Orange
+        let orangeScoreData = gameData["orange"]["stats"]["core"]["score"];
+        let orangeShotsPercentageData = gameData["orange"]["stats"]["core"]["shooting_percentage"];
+        let orangeDemosInflictedData = gameData["orange"]["stats"]["demo"]["inflicted"];
+        
+        // Blue
+        let blueScoreData = gameData["blue"]["stats"]["core"]["score"];
+        let blueShotsPercentageData = gameData["blue"]["stats"]["core"]["shooting_percentage"];
+        let blueDemosInflictedData = gameData["blue"]["stats"]["demo"]["inflicted"];
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 300])
+        svg.append("g")
+        .attr("transform", "translate(30, 450)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        let maxScore = Math.max(blueScoreData, orangeScoreData);
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain([0, maxScore+100])
+        .range([ 400, 0 ]);
+
+        y.nice();
+
+        svg.append("g")
+        .attr("transform", "translate(30, 50)")
+        .call(d3.axisLeft(y))
+
+        // Add orange bar
+        svg.append("rect")
+        .attr("x", 50)
+        .attr("y", y(orangeScoreData))
+        .attr("width", 75)
+        .attr("height", 400 - y(orangeScoreData))
+        .attr("fill", "orange")
+        .attr("transform", "translate(15, 50)");
+       
+        // Add orange bar
+        svg.append("rect")
+        .attr("x", 50)
+        .attr("y", y(blueScoreData))
+        .attr("width", 75)
+        .attr("height", 400 - y(blueScoreData))
+        .attr("fill", "blue")
+        .attr("transform", "translate(170, 50)");
+    }
+
+    AddShootingPercentageChart() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Orange", "Blue"];
+
+        let svg = d3.select("#shotpercentage-stats")
+        .attr("width", "350px")
+        .attr("height", "500px");
+
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        svg.append("text")
+        .attr("x", 100)
+        .attr("y", 485)
+        .text("Shooting Percentage")
+
+        // Orange
+        let orangeShotsPercentageData = gameData["orange"]["stats"]["core"]["shooting_percentage"];
+        
+        // Blue
+        let blueShotsPercentageData = gameData["blue"]["stats"]["core"]["shooting_percentage"];
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 300])
+        svg.append("g")
+        .attr("transform", "translate(30, 450)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        let maxScore = Math.max(orangeShotsPercentageData, blueShotsPercentageData);
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain([0, 100])
+        .range([ 400, 0 ]);
+
+        y.nice();
+
+        svg.append("g")
+        .attr("transform", "translate(30, 50)")
+        .call(d3.axisLeft(y))
+
+        // Add orange bar
+        svg.append("rect")
+        .attr("x", 50)
+        .attr("y", y(orangeShotsPercentageData))
+        .attr("width", 75)
+        .attr("height", 400 - y(orangeShotsPercentageData))
+        .attr("fill", "orange")
+        .attr("transform", "translate(15, 50)");
+       
+        // Add orange bar
+        svg.append("rect")
+        .attr("x", 50)
+        .attr("y", y(blueShotsPercentageData))
+        .attr("width", 75)
+        .attr("height", 400 - y(blueShotsPercentageData))
+        .attr("fill", "blue")
+        .attr("transform", "translate(170, 50)");
+    }
+
+    AddDemosChart() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Orange", "Blue"];
+
+        let svg = d3.select("#demos-stats")
+        .attr("width", "350px")
+        .attr("height", "500px");
+
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        svg.append("text")
+        .attr("x", 140)
+        .attr("y", 485)
+        .text("Demos")
+
+        // Orange
+        let orangeDemosInflictedData = gameData["orange"]["stats"]["demo"]["inflicted"];
+        
+        // Blue
+        let blueDemosInflictedData = gameData["blue"]["stats"]["demo"]["inflicted"];
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 300])
+        svg.append("g")
+        .attr("transform", "translate(30, 450)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        let maxScore = Math.max(orangeDemosInflictedData, blueDemosInflictedData);
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain([0, maxScore+5])
+        .range([ 400, 0 ]);
+
+        y.nice();
+
+        svg.append("g")
+        .attr("transform", "translate(30, 50)")
+        .call(d3.axisLeft(y))
+
+        // Add orange bar
+        svg.append("rect")
+        .attr("x", 50)
+        .attr("y", y(orangeDemosInflictedData))
+        .attr("width", 75)
+        .attr("height", 400 - y(orangeDemosInflictedData))
+        .attr("fill", "orange")
+        .attr("transform", "translate(15, 50)");
+       
+        // Add orange bar
+        svg.append("rect")
+        .attr("x", 50)
+        .attr("y", y(blueDemosInflictedData))
+        .attr("width", 75)
+        .attr("height", 400 - y(blueDemosInflictedData))
+        .attr("fill", "blue")
+        .attr("transform", "translate(170, 50)");
+    }
+
+    AddBoostStatsCharts() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Goals", "Shots", "Assists", "Saves"];
+
+        // Hide other svgs
+        d3.select("#score-stats").style("display", "none");
+        d3.select("#shotpercentage-stats").style("display", "none");
+        d3.select("#demos-stats").style("display", "none");
+
+        // Display only boost stats
+        d3.select("#players-bpm-stats").style("display", "");
+        d3.select("#players-avg-boost-stats").style("display", "");
+        d3.select("#team-bpm-stats").style("display", "");
+        d3.select("#team-avg-boost-stats").style("display", "");
+        d3.select("#boost-pads-stats").style("display", "");
+
+        let svg = d3.select("#core-stats")
+        .attr("width", "1100px")
+        .attr("height", "430px");
+
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        // Orange
+        let orangeShotsData = gameData["orange"]["stats"]["core"]["shots"];
+        let orangeGoalsData = gameData["orange"]["stats"]["core"]["goals"];
+        let orangeAssistsData = gameData["orange"]["stats"]["core"]["assists"];
+        let orangeSavesData = gameData["orange"]["stats"]["core"]["saves"];
+
+        // Blue
+        let blueShotsData = gameData["blue"]["stats"]["core"]["shots"];
+        let blueGoalsData = gameData["blue"]["stats"]["core"]["goals"];
+        let blueAssistsData = gameData["blue"]["stats"]["core"]["assists"];
+        let blueSavesData = gameData["blue"]["stats"]["core"]["saves"];
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 1000])
+        .padding([0.2])
+        svg.append("g")
+        .attr("transform", "translate(30,410)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain(d3.extent([0,Math.max(orangeShotsData, Math.max(blueShotsData, Math.max(orangeSavesData, blueSavesData))) + 3]))
+        .range([ 400, 0 ]);
+        svg.append("g")
+        .attr("transform", "translate(30,10)")
+        .call(d3.axisLeft(y));
+
+        let orangeData = [];
+
+        orangeData.push({
+            key: "Goals",
+            value: orangeGoalsData
+        });
+        orangeData.push({
+            key: "Shots",
+            value: orangeShotsData
+        });
+        orangeData.push({
+            key: "Assists",
+            value: orangeAssistsData
+        });
+        orangeData.push({
+            key: "Saves",
+            value: orangeSavesData
+        });
+
+        svg.data(orangeData);
+
+        var xSubgroup = d3.scaleBand()
+        .domain(groups)
+        .range([0, 0]);
+
+        //Show the bars
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(orangeData)
+        .enter()
+        .append("g")
+            .attr("transform", function(d) { return "translate(" + (x(d.key)+40) + ",10)"; })
+        .selectAll("rect")
+        .data(d => [d])
+        .enter().append("rect")
+            .attr("x", function(d) { return xSubgroup(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", 75)
+            .attr("height", function(d) { return 400 - y(d.value); })
+            .attr("fill", function(d) { return "orange"; });
+
+        let blueData = [];
+
+        blueData.push({
+            key: "Goals",
+            value: blueGoalsData
+        });
+        blueData.push({
+            key: "Shots",
+            value: blueShotsData
+        });
+        blueData.push({
+            key: "Assists",
+            value: blueAssistsData
+        });
+        blueData.push({
+            key: "Saves",
+            value: blueSavesData
+        });
+
+        svg.data(blueData);
+
+        var xSubgroup = d3.scaleBand()
+        .domain(groups)
+        .range([0, 0]);
+
+        //Show the bars
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(blueData)
+        .enter()
+        .append("g")
+            .attr("transform", function(d) { console.log(d.key); return "translate(" + (x(d.key) + 140) + ",10)"; })
+        .selectAll("rect")
+        .data(d => [d])
+        .enter().append("rect")
+            .attr("x", function(d) { return xSubgroup(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", 75)
+            .attr("height", function(d) { return 400 - y(d.value); })
+            .attr("fill", function(d) { return "blue"; });
+
+        globalApplicationState.players.AddScoreChart.call(this);
+        globalApplicationState.players.AddShootingPercentageChart.call(this);
+        globalApplicationState.players.AddDemosChart.call(this);
+    }
+
+    AddGameOtherStatsCharts() {
+
     }
 }
