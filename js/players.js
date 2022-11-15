@@ -39,6 +39,37 @@ class Players {
         this.AddTableHeaders();
         this.AddSortingHandlers();
         this.FillPlayersTable();
+        this.FillBubbleChart();
+    }
+
+    FillBubbleChart() {
+        this.bubbleSvg = d3.select("#bubble-chart");
+        
+        this.bubbleSvg.append("line")
+            .attr("x1", 30)
+            .attr("x2", 30)
+            .attr("y1", 10)
+            .attr("y2", 320)
+            .style("stroke", "black")
+            .style("stroke-width", 1);
+
+        this.bubbleSvg.append("line")
+            .attr("x1", 30)
+            .attr("x2", 650)
+            .attr("y1", 320)
+            .attr("y2", 320)
+            .style("stroke", "black")
+            .style("stroke-width", 1);
+
+        this.bubbleSvg.append("text")
+            .attr("x", 3)
+            .attr("y", 115)
+            .text("win");
+
+        this.bubbleSvg.append("text")
+            .attr("x", 0)
+            .attr("y", 225)
+            .text("loss");
     }
 
     AddTableHeaders() {
@@ -832,7 +863,7 @@ class Players {
             }
             
         })
-        .attr("transform", "translate(175,15)")
+        .attr("transform", "translate(190,15)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -865,7 +896,7 @@ class Players {
 
             return playerGameData["stats"]["core"]["goals"];
         })
-        .attr("transform", "translate(335,15)")
+        .attr("transform", "translate(375,15)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -898,7 +929,7 @@ class Players {
 
             return playerGameData["stats"]["core"]["assists"];
         })
-        .attr("transform", "translate(500,15)")
+        .attr("transform", "translate(560,15)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -931,7 +962,7 @@ class Players {
 
             return playerGameData["stats"]["core"]["saves"];
         })
-        .attr("transform", "translate(650,15)")
+        .attr("transform", "translate(735,15)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
     }
@@ -964,13 +995,13 @@ class Players {
 
         let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
 
-        let playerData = gameData["orange"]["players"];
-        console.log(playerData);
+        this.orangePlayerData = gameData["orange"]["players"];
+        console.log(this.orangePlayerData);
             
         // add table row data
         let trs = d3.select('#orange-table-body')
             .selectAll('tr')
-            .data(playerData)
+            .data(this.orangePlayerData)
             .join("tr");
             
         // Add a td in each tr
@@ -1084,13 +1115,13 @@ class Players {
 
         let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
 
-        let playerData = gameData["blue"]["players"];
-        console.log(playerData);
+        this.bluePlayerData = gameData["blue"]["players"];
+        console.log(this.bluePlayerData);
             
         // add table row data
         let trs = d3.select('#blue-table-body')
             .selectAll('tr')
-            .data(playerData)
+            .data(this.bluePlayerData)
             .join("tr");
             
         // Add a td in each tr
@@ -1192,6 +1223,34 @@ class Players {
         coreButton.on("click", function() { globalApplicationState.players.AddGameCoreStatsCharts.call(this) });
         //otherButton.on("click", globalApplicationState.players.AddGameOtherStatsCharts.call(this));
         console.log(boostButton);
+    }
+
+    AddTooltipHandler(ttHTML, hoverObject) {
+        
+
+        let tt = d3.select("body")
+            .append("div")
+            .style("background-color", "white")
+            .style("opacity", 0.8)
+            .style("position", "absolute")
+            .style("visibility", "hidden")
+            .style("padding", "5px")
+            .style("border-radius", "10px");
+        
+
+        hoverObject.on("mouseover", function (event, d) {
+            tt
+                .style("visibility", "visible")
+                .html(ttHTML);
+            })
+            .on("mousemove", function (event, d) {
+                tt
+                    .style("top", (event.pageY + 15) + "px")
+                    .style("left", (event.pageX + 15) + "px");
+            })
+            .on("mouseout", function () {
+                tt.style("visibility", "hidden");
+            });
     }
 
     AddGameCoreStatsCharts() {          
@@ -1296,11 +1355,39 @@ class Players {
         .selectAll("rect")
         .data(d => [d])
         .enter().append("rect")
+            .attr("class", "orange-core-rect")
+            .attr("team", "orange")
+            .attr("type", function(d) {return d.key.toLowerCase()})
             .attr("x", function(d) { return xSubgroup(d.key); })
             .attr("y", function(d) { return y(d.value); })
             .attr("width", 75)
             .attr("height", function(d) { return 400 - y(d.value); })
             .attr("fill", function(d) { return "orange"; });
+
+
+        // Add tooltip handlers
+        let rect = d3.selectAll(".orange-core-rect");
+        let types = ["goals", "shots", "assists", "saves"];
+        let players = this.orangePlayerData;
+
+        for (var i = 0; i < 4; i++)
+        {
+            let rectFiltered = rect.filter(function() {
+                return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "orange";
+            });
+
+            var tooltipHTML = '<center><h5>' + gameData["orange"]["stats"]["core"][types[i]] + ' '  + types[i] + '</h5></center>';
+                //var tooltipHTML = '';
+            players.forEach( (d) => {
+                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["core"][types[i]] + ' </b></p>';
+            });
+
+            console.log(tooltipHTML);
+
+            globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
+        }
+
+
 
         let blueData = [];
 
@@ -1338,12 +1425,37 @@ class Players {
         .selectAll("rect")
         .data(d => [d])
         .enter().append("rect")
+            .attr("class", "blue-core-rect")
+            .attr("team", "blue")
+            .attr("type", function(d) {return d.key.toLowerCase()})
             .attr("x", function(d) { return xSubgroup(d.key); })
             .attr("y", function(d) { return y(d.value); })
             .attr("width", 75)
             .attr("height", function(d) { return 400 - y(d.value); })
             .attr("fill", function(d) { return "blue"; });
+
+        // Add tooltip handlers
+        rect = d3.selectAll(".blue-core-rect");
+        players = this.bluePlayerData;
+        console.log(players);
+        for (var i = 0; i < 4; i++)
+        {
+            let rectFiltered = rect.filter(function() {
+                return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "blue";
+            });
+    
+            var tooltipHTML = '<center><h5>' + gameData["blue"]["stats"]["core"][types[i]] + ' '  + types[i] + '</h5></center>';
+                //var tooltipHTML = '';
+            players.forEach( (d) => {
+                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["core"][types[i]] + '</b></p>';
+            });
+
+            console.log(tooltipHTML);
+    
+            globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
+        }
     }
+    
 
     AddScoreChart() {
         let gameData = d3.select(this)._groups["0"]["0"]["__data__"];

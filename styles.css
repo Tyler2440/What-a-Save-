@@ -58,7 +58,7 @@ main {
     float: right;
     position: sticky;
     display: block;
-    background-color: aqua;
+    /* background-color: white; */
     margin-left: 30px;
 }
 
