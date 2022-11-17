@@ -1219,7 +1219,9 @@ class Players {
         let boostButton = d3.select("#boost-button");
         let otherButton = d3.select("#other-button");
 
-        boostButton.on("click", function() {globalApplicationState.players.AddBoostStatsCharts.call(this) });
+        let row = this;
+
+        boostButton.on("click", function() {globalApplicationState.players.AddBoostStatsCharts.call(row) });
         coreButton.on("click", function() { globalApplicationState.players.AddGameCoreStatsCharts.call(this) });
         //otherButton.on("click", globalApplicationState.players.AddGameOtherStatsCharts.call(this));
         console.log(boostButton);
@@ -1256,6 +1258,8 @@ class Players {
     AddGameCoreStatsCharts() {          
         d3.select("#game-visualization-div").style("display", "");
         d3.select("#stat-visualization-div").style("display", "");
+        d3.select("#game-visualizations").style("position", "");
+        d3.select("#stat-list").style("margin-top", "0px");
         
         d3.select("#core-stats").style("display", "");
         d3.select("#score-stats").style("display", "");
@@ -1266,6 +1270,7 @@ class Players {
         d3.select("#players-avg-boost-stats").style("display", "none");
         d3.select("#team-bpm-stats").style("display", "none");
         d3.select("#team-avg-boost-stats").style("display", "none");
+        d3.select("#team-time-boost-stats").style("display", "none");
         d3.select("#boost-pads-stats").style("display", "none");
 
         let svg = d3.select("#core-stats")
@@ -1648,9 +1653,8 @@ class Players {
     }
 
     AddBoostStatsCharts() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
-        let groups = ["Goals", "Shots", "Assists", "Saves"];
-
+        d3.select("#game-visualizations").style("position", "absolute");
+        d3.select("#stat-list").style("margin-top", "440px");
         // Hide other svgs
         d3.select("#core-stats").style("display", "none");
         d3.select("#score-stats").style("display", "none");
@@ -1662,128 +1666,266 @@ class Players {
         d3.select("#players-avg-boost-stats").style("display", "");
         d3.select("#team-bpm-stats").style("display", "");
         d3.select("#team-avg-boost-stats").style("display", "");
+        d3.select("#team-time-boost-stats").style("display", "");
         d3.select("#boost-pads-stats").style("display", "");
 
-        // let svg = d3.select("#core-stats")
-        // .attr("width", "1100px")
-        // .attr("height", "430px");
+        globalApplicationState.players.AddTeamBPMChart.call(this);
+        globalApplicationState.players.AddTeamAvgBoostChart.call(this);
+        globalApplicationState.players.AddTeamTimeBoostChart.call(this);
+    }
 
-        // svg.selectAll("rect").remove();
-        // svg.selectAll("text").remove();
-        // svg.selectAll("line").remove();
+    AddTeamBPMChart() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Boost-Per-Minute"];
 
-        // // Orange
-        // let orangeShotsData = gameData["orange"]["stats"]["core"]["shots"];
-        // let orangeGoalsData = gameData["orange"]["stats"]["core"]["goals"];
-        // let orangeAssistsData = gameData["orange"]["stats"]["core"]["assists"];
-        // let orangeSavesData = gameData["orange"]["stats"]["core"]["saves"];
+        let svg = d3.select("#team-bpm-stats")
+        .attr("width", "500px")
+        .attr("height", "430px");
 
-        // // Blue
-        // let blueShotsData = gameData["blue"]["stats"]["core"]["shots"];
-        // let blueGoalsData = gameData["blue"]["stats"]["core"]["goals"];
-        // let blueAssistsData = gameData["blue"]["stats"]["core"]["assists"];
-        // let blueSavesData = gameData["blue"]["stats"]["core"]["saves"];
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
 
-        // // Add X axis
-        // var x = d3.scaleBand()
-        // .domain(groups)
-        // .range([0, 1000])
-        // .padding([0.2])
-        // svg.append("g")
-        // .attr("transform", "translate(30,410)")
-        // .call(d3.axisBottom(x).tickSize(0));
+        // Orange
+        let orangeBPMData = gameData["orange"]["stats"]["boost"]["bpm"];
 
-        // // Add Y axis
-        // var y = d3.scaleLinear()
-        // .domain(d3.extent([0,Math.max(orangeShotsData, Math.max(blueShotsData, Math.max(orangeSavesData, blueSavesData))) + 3]))
-        // .range([ 400, 0 ]);
-        // svg.append("g")
-        // .attr("transform", "translate(30,10)")
-        // .call(d3.axisLeft(y));
+        // Blue
+        let blueBPMData = gameData["blue"]["stats"]["boost"]["bpm"];
 
-        // let orangeData = [];
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 450])
+        svg.append("g")
+        .attr("transform", "translate(40,410)")
+        .call(d3.axisBottom(x).tickSize(0));
 
-        // orangeData.push({
-        //     key: "Goals",
-        //     value: orangeGoalsData
-        // });
-        // orangeData.push({
-        //     key: "Shots",
-        //     value: orangeShotsData
-        // });
-        // orangeData.push({
-        //     key: "Assists",
-        //     value: orangeAssistsData
-        // });
-        // orangeData.push({
-        //     key: "Saves",
-        //     value: orangeSavesData
-        // });
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain(d3.extent([0,Math.max(blueBPMData, orangeBPMData) + 100]))
+        .range([ 400, 0 ]);
+        y.nice();
 
-        // svg.data(orangeData);
+        svg.append("g")
+        .attr("transform", "translate(40,10)")
+        .call(d3.axisLeft(y));
 
-        // var xSubgroup = d3.scaleBand()
-        // .domain(groups)
-        // .range([0, 0]);
+        svg.append("rect")
+        .attr("x", 65)
+        .attr("y", y(orangeBPMData)+10)
+        .attr("width", 150)
+        .attr("height", 400-y(orangeBPMData))
+        .attr("fill", "orange");
+        
+        svg.append("rect")
+        .attr("x", 215)
+        .attr("y", y(blueBPMData)+10)
+        .attr("width", 150)
+        .attr("height", 400-y(blueBPMData))
+        .attr("fill", "blue");
+    }
 
-        // //Show the bars
-        // svg.append("g")
-        // .selectAll("g")
-        // // Enter in data = loop group per group
-        // .data(orangeData)
-        // .enter()
-        // .append("g")
-        //     .attr("transform", function(d) { return "translate(" + (x(d.key)+40) + ",10)"; })
-        // .selectAll("rect")
-        // .data(d => [d])
-        // .enter().append("rect")
-        //     .attr("x", function(d) { return xSubgroup(d.key); })
-        //     .attr("y", function(d) { return y(d.value); })
-        //     .attr("width", 75)
-        //     .attr("height", function(d) { return 400 - y(d.value); })
-        //     .attr("fill", function(d) { return "orange"; });
+    AddTeamAvgBoostChart() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Avg. Boost Amount"];
 
-        // let blueData = [];
+        let svg = d3.select("#team-avg-boost-stats")
+        .attr("width", "500px")
+        .attr("height", "430px");
 
-        // blueData.push({
-        //     key: "Goals",
-        //     value: blueGoalsData
-        // });
-        // blueData.push({
-        //     key: "Shots",
-        //     value: blueShotsData
-        // });
-        // blueData.push({
-        //     key: "Assists",
-        //     value: blueAssistsData
-        // });
-        // blueData.push({
-        //     key: "Saves",
-        //     value: blueSavesData
-        // });
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
 
-        // svg.data(blueData);
+        // Orange
+        let orangeAvgAmountData = gameData["orange"]["stats"]["boost"]["avg_amount"];
 
-        // var xSubgroup = d3.scaleBand()
-        // .domain(groups)
-        // .range([0, 0]);
+        // Blue
+        let blueAvgAmountData = gameData["blue"]["stats"]["boost"]["avg_amount"];
 
-        // //Show the bars
-        // svg.append("g")
-        // .selectAll("g")
-        // // Enter in data = loop group per group
-        // .data(blueData)
-        // .enter()
-        // .append("g")
-        //     .attr("transform", function(d) { console.log(d.key); return "translate(" + (x(d.key) + 140) + ",10)"; })
-        // .selectAll("rect")
-        // .data(d => [d])
-        // .enter().append("rect")
-        //     .attr("x", function(d) { return xSubgroup(d.key); })
-        //     .attr("y", function(d) { return y(d.value); })
-        //     .attr("width", 75)
-        //     .attr("height", function(d) { return 400 - y(d.value); })
-        //     .attr("fill", function(d) { return "blue"; });
+        console.log(gameData);
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 450])
+        svg.append("g")
+        .attr("transform", "translate(40,410)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain([0, Math.max(orangeAvgAmountData, blueAvgAmountData)+30])
+        .range([ 400, 0 ]);
+        y.nice();
+
+        svg.append("g")
+        .attr("transform", "translate(40,10)")
+        .call(d3.axisLeft(y));
+
+        svg.append("rect")
+        .attr("x", 65)
+        .attr("y", y(orangeAvgAmountData)+10)
+        .attr("width", 150)
+        .attr("height", 400-y(orangeAvgAmountData))
+        .attr("fill", "orange");
+        
+        svg.append("rect")
+        .attr("x", 215)
+        .attr("y", y(blueAvgAmountData)+10)
+        .attr("width", 150)
+        .attr("height", 400-y(blueAvgAmountData))
+        .attr("fill", "blue");
+    }
+
+    AddTeamTimeBoostChart() {
+        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let groups = ["Time at 0 Boost", "Time at 100 Boost"];
+
+        let svg = d3.select("#team-time-boost-stats")
+        .attr("width", "1100px")
+        .attr("height", "430px");
+
+        svg.selectAll("rect").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        // Orange
+        let orangeTimeZeroData = gameData["orange"]["stats"]["boost"]["time_zero_boost"];
+        let orangeTimeFullData = gameData["orange"]["stats"]["boost"]["time_full_boost"];
+
+        // Blue
+        let blueTimeZeroData = gameData["blue"]["stats"]["boost"]["time_zero_boost"];
+        let blueTimeFullData = gameData["blue"]["stats"]["boost"]["time_full_boost"];
+
+        // Add X axis
+        var x = d3.scaleBand()
+        .domain(groups)
+        .range([0, 1000])
+        .padding([0.2])
+        svg.append("g")
+        .attr("transform", "translate(30,410)")
+        .call(d3.axisBottom(x).tickSize(0));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+        .domain(d3.extent([0,Math.max(orangeTimeFullData, blueTimeFullData) + 20]))
+        .range([ 400, 0 ]);
+        svg.append("g")
+        .attr("transform", "translate(30,10)")
+        .call(d3.axisLeft(y));
+
+        let orangeData = [];
+
+        orangeData.push({
+            key: "Time at 0 Boost",
+            value: orangeTimeZeroData
+        });
+        orangeData.push({
+            key: "Time at 100 Boost",
+            value: orangeTimeFullData
+        });
+
+        var xSubgroup = d3.scaleBand()
+        .domain(groups)
+        .range([0, 0]);
+
+        //Show the bars
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(orangeData)
+        .enter()
+        .append("g")
+            .attr("transform", function(d) { return "translate(" + (x(d.key)+60) + ",10)"; })
+        .selectAll("rect")
+        .data(d => [d])
+        .enter().append("rect")
+            .attr("class", "orange-boost-rect")
+            .attr("team", "orange")
+            .attr("type", function(d) {return d.key.toLowerCase()})
+            .attr("x", function(d) { return xSubgroup(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", 150)
+            .attr("height", function(d) { return 400 - y(d.value); })
+            .attr("fill", function(d) { return "orange"; });
+
+
+        // Add tooltip handlers
+        let rect = d3.selectAll(".orange-boost-rect");
+        let types = ["time_zero_boost", "time_full_boost"];
+        let players = this.orangePlayerData;
+
+        for (var i = 0; i < 4; i++)
+        {
+            let rectFiltered = rect.filter(function() {
+                return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "orange";
+            });
+
+            var tooltipHTML = '<center><h5>' + gameData["orange"]["stats"]["boost"][types[i]] + ' '  + types[i] + '</h5></center>';
+                //var tooltipHTML = '';
+            players.forEach( (d) => {
+                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + ' </b></p>';
+            });
+
+            console.log(tooltipHTML);
+
+            globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
+        }
+
+
+        let blueData = [];
+
+        blueData.push({
+            key: "Time at 0 Boost",
+            value: blueTimeZeroData
+        });
+        blueData.push({
+            key: "Time at 100 Boost",
+            value: blueTimeFullData
+        });
+
+        //Show the bars
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(blueData)
+        .enter()
+        .append("g")
+            .attr("transform", function(d) { return "translate(" + (x(d.key)+210) + ",10)"; })
+        .selectAll("rect")
+        .data(d => [d])
+        .enter().append("rect")
+            .attr("class", "blue-boost-rect")
+            .attr("team", "blue")
+            .attr("type", function(d) {return d.key.toLowerCase()})
+            .attr("x", function(d) { return xSubgroup(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", 150)
+            .attr("height", function(d) { return 400 - y(d.value); })
+            .attr("fill", function(d) { return "blue"; });
+
+        // Add tooltip handlers
+        rect = d3.selectAll(".blue-boost-rect");
+        types = ["time_zero_boost", "time_full_boost"];
+        players = this.bluePlayerData;
+
+        for (var i = 0; i < 4; i++)
+        {
+            let rectFiltered = rect.filter(function() {
+                return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "blue";
+            });
+
+            var tooltipHTML = '<center><h5>' + gameData["blue"]["stats"]["boost"][types[i]] + ' '  + types[i] + '</h5></center>';
+                //var tooltipHTML = '';
+            players.forEach( (d) => {
+                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + ' </b></p>';
+            });
+
+            console.log(tooltipHTML);
+
+            globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
+        }
     }
 
     AddGameOtherStatsCharts() {
