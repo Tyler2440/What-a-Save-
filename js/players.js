@@ -60,6 +60,52 @@ class Players {
         return players;
     }
 
+    setupBrushes(data, x, y)
+    {
+        // Create each of the brush groups
+        let brushSvg = d3.select("#brush-g")
+        .call(d3.brushX()
+        .extent([[0,0], [800,350]])
+        .on("start brush end", brushed));
+
+        // When the brush groups are clicked, reset the bubble chart and table
+        d3.select("#bubble-chart").selectAll(".brush")
+        .on("click", function() { 
+            let circles = d3.select("#bubble-chart").selectAll("circle")["_groups"][0];
+            
+            circles.forEach(function(circle) {
+                circle = d3.select(circle);
+                circle.attr("fill", circle.attr("class")).attr("stroke", "black");
+            })
+            globalApplicationState.players.FillPlayersTable(data);
+        })
+
+        // Brush handler
+        function brushed({selection}){
+            // Get all circles
+            let circles = d3.select("#bubble-chart").selectAll("circle");
+                              
+            // Get the left and right side of brush
+            const [x0, x1] = selection; 
+
+            // Fill all circles gray
+            circles.attr("fill", "gray").attr("stroke", "lightgray");
+                            
+            // We apply the filter to find the dots that are inside the brush
+            let value = circles
+            .filter(d => x0-30 <= x(d.value)
+                && x(d.value) < x1-30)
+                // && y0 <= y(d.value)
+                // && y(d.value) < y1)
+            .attr("fill", "white")
+            .attr("stroke", "black");//.data();
+
+            console.log(value);
+            // Redraw the table with the new, filtered data
+            // globalApplicationState.players.drawTable(value);
+        }
+    }
+
     FillBubbleChart(data, playerName) {
         let svg = d3.select("#bubble-chart");
         let groups = ["Win", "Loss"];
@@ -103,6 +149,9 @@ class Players {
         //.domain(d3.extent([0,Math.max(orangeShotsData, Math.max(blueShotsData, Math.max(orangeSavesData, blueSavesData))) + 3]))
         .range([0,750]);
         x.nice();
+
+        //svg.remove(".brush");
+        
         
         svg.append("g")
         .attr("transform", "translate(30,300)")
@@ -114,6 +163,8 @@ class Players {
         .range([0, 290])
         .padding([0.2]);
         
+        this.setupBrushes(data, x, y);
+        
         svg.append("g")
         .attr("transform", "translate(30,10)")
         .call(d3.axisLeft(y).tickSize(0));
@@ -121,6 +172,9 @@ class Players {
         var ySubgroup = d3.scaleBand()
         .domain(groups)
         .range([0, 0]);
+
+        svg.selectAll("text")
+        .attr("transform", "translate(-5,0)");
 
         //Show the circles
         svg.append("g")
@@ -132,7 +186,7 @@ class Players {
         .data(d => [d])
         .enter().append("circle")
             .attr("data", d=>d)
-            .attr("team", "orange")
+            .attr("class", "orange")
             .attr("type", "Win")
             .attr("cx", d => x(d.value)+30)
             .attr("cy", "90")
@@ -150,7 +204,7 @@ class Players {
         .data(d => [d])
         .enter().append("circle")
             .attr("data", d=>d)
-            .attr("team", "blue")
+            .attr("class", "blue")
             .attr("type", "Loss")
             .attr("cx", d => x(d.value)+30)
             .attr("cy", "220")
@@ -171,6 +225,8 @@ class Players {
         .on("click", function() {
             let circle = d3.select(this);
             let data = circle["_groups"][0][0]["__data__"].key;
+
+            d3.select("#scoreboards").style("display", "");
             // Reset all "selected" elements 
             d3.select("#player-table").selectAll(".selected").classed("selected", false);
 
