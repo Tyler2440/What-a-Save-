@@ -36,57 +36,332 @@ class Players {
         
         console.log(data);
 
-        this.AddTableHeaders();
+        this.AddTableHeaders(this.data);
         this.AddSortingHandlers();
-        this.FillPlayersTable();
-        this.FillBubbleChart();
+        this.FillPlayersTable(this.data);
+        this.FillBeeSwarmChart(this.data);
     }
 
-    FillBubbleChart() {
-        this.bubbleSvg = d3.select("#bubble-chart");
+    GetPlayers(data) {
+        let players = new Set();
+        data.forEach(function (game) {
+            // let new_player = "";
+            if (game["blue"]["players"] != undefined)
+            {
+                game["blue"]["players"].forEach(player => players.add(player["name"]));
+            }
+            
+            if (game["orange"]["players"] != undefined && game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+            {
+                game["orange"]["players"].forEach(player => players.add(player["name"]));
+            }
+        });
+
+        return players;
+    }
+
+    FillBubbleChart(data, playerName) {
+        let svg = d3.select("#bubble-chart");
+        let groups = ["Win", "Loss"];
+    
+        svg.selectAll("circle").remove();
+        svg.selectAll("text").remove();
+        svg.selectAll("line").remove();
+
+        let winData = [];
+        let lossData = [];
+        let playersObj = this;
+        let maxScore = 0;
+
+        data.forEach(function(game) {
+            let result = playersObj.IsWin(game, playerName);
+            let win = result[0];
+            let score = result[1];
+            if (score > maxScore)
+            {
+                maxScore = score;
+            }
+            if (win)
+            {
+                winData.push({
+                    key: game,
+                    value: score
+                });
+            }
+            else
+            {
+                lossData.push({
+                    key: game,
+                    value: score
+                });
+            }
+        });
+
+        // Add X axis
+        var x = d3.scaleLinear()
+        .domain([0, maxScore])
+        //.domain(d3.extent([0,Math.max(orangeShotsData, Math.max(blueShotsData, Math.max(orangeSavesData, blueSavesData))) + 3]))
+        .range([0,750]);
+        x.nice();
         
-        this.bubbleSvg.append("line")
+        svg.append("g")
+        .attr("transform", "translate(30,300)")
+        .call(d3.axisBottom(x));
+        
+        // Add Y axis
+        let y = d3.scaleBand()
+        .domain(groups)
+        .range([0, 290])
+        .padding([0.2]);
+        
+        svg.append("g")
+        .attr("transform", "translate(30,10)")
+        .call(d3.axisLeft(y).tickSize(0));
+        
+        var ySubgroup = d3.scaleBand()
+        .domain(groups)
+        .range([0, 0]);
+
+        //Show the circles
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(winData)
+        .enter()
+        .selectAll("circle")
+        .data(d => [d])
+        .enter().append("circle")
+            .attr("data", d=>d)
+            .attr("team", "orange")
+            .attr("type", "Win")
+            .attr("cx", d => x(d.value)+30)
+            .attr("cy", "90")
+            .attr("r", 6)
+            .attr("stroke", "black")
+            .attr("fill", "orange");
+
+        //Show the circles
+        svg.append("g")
+        .selectAll("g")
+        // Enter in data = loop group per group
+        .data(lossData)
+        .enter()
+        .selectAll("circle")
+        .data(d => [d])
+        .enter().append("circle")
+            .attr("data", d=>d)
+            .attr("team", "blue")
+            .attr("type", "Loss")
+            .attr("cx", d => x(d.value)+30)
+            .attr("cy", "220")
+            .attr("r", 6)
+            .attr("stroke", "black")
+            .attr("fill", "blue");
+
+        let circles = svg.selectAll("circle");
+
+        circles.on("mouseover", function() {
+            let circle = d3.select(this);
+            circle.attr("stroke", "white");
+        })
+        .on("mouseout", function() {
+            let circle = d3.select(this);
+            circle.attr("stroke", "black");
+        })
+        .on("click", function() {
+            let circle = d3.select(this);
+            let data = circle["_groups"][0][0]["__data__"].key;
+            // Reset all "selected" elements 
+            d3.select("#player-table").selectAll(".selected").classed("selected", false);
+
+            globalApplicationState.players.FillOrangeScoreBoard(data);
+            globalApplicationState.players.FillBlueScoreBoard(data);
+            globalApplicationState.players.AddGameCoreStatsCharts(data);
+            globalApplicationState.players.AddButtonHandlers(data);
+        });
+    }
+
+    FillBeeSwarmChart(data) {
+        let beeSvg = d3.select("#beeswarm-chart");
+        
+        beeSvg.append("line")
             .attr("x1", 30)
             .attr("x2", 30)
             .attr("y1", 10)
-            .attr("y2", 320)
+            .attr("y2", 200)
             .style("stroke", "black")
             .style("stroke-width", 1);
 
-        this.bubbleSvg.append("line")
+        beeSvg.append("line")
             .attr("x1", 30)
             .attr("x2", 650)
-            .attr("y1", 320)
-            .attr("y2", 320)
+            .attr("y1", 200)
+            .attr("y2", 200)
             .style("stroke", "black")
             .style("stroke-width", 1);
 
-        this.bubbleSvg.append("text")
-            .attr("x", 3)
-            .attr("y", 115)
-            .text("win");
+        let players = new Set();
+        data.forEach(function (game) {
+            // let new_player = "";
+            if (game["blue"]["players"] != undefined)
+            {
+                game["blue"]["players"].forEach(player => players.add(player["name"]));
+            }
+            
+            if (game["orange"]["players"] != undefined && game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+            {
+                game["orange"]["players"].forEach(player => players.add(player["name"]));
+            }
 
-        this.bubbleSvg.append("text")
-            .attr("x", 0)
-            .attr("y", 225)
-            .text("loss");
+            //players.add(player["name"])
+        });
+
+        let swarmData = [];
+        let playersObj = this;
+
+        players.forEach(function(player) {
+            let winData = playersObj.GetWinLoss(data, player);
+
+            swarmData.push({
+                player: player, 
+                wl: winData.ratio,
+                total: winData.total
+            });
+        });
+
+        swarmData = swarmData.filter(d => d.total >= 5);
+
+        console.log("Swarmdata: ");
+        console.log(swarmData);
     }
 
-    AddTableHeaders() {
+    GetWinLoss(data, player) {
+        let games = [];
+        let playerObj = this;
+        data.forEach(function (game) {
+            let players_temp = [];
+
+            if (game["blue"]["players"] != undefined) {
+                game["blue"]["players"].forEach(function (p) {
+                    if (player == p["name"])
+                    {
+                        games.push(game);
+                    }
+                });
+            }
+                
+            else if (game["orange"]["players"] != undefined) {
+                game["orange"]["players"].forEach(function (p) {
+                    if (player == p["name"])
+                    {
+                        games.push(game);
+                    }
+                });
+            }
+        });
+
+        let wins = 0;
+        let losses = 0;
+
+        games.forEach(function(game) {
+            let result = playerObj.IsWin(game, player);
+            let win = result[0];
+            let score = result[1];
+            if (win)
+            {
+                wins++;
+            }
+            else
+            {
+                losses++;
+            }
+        });
+
+        let ratio = wins / losses;
+        return {
+            ratio: ratio, 
+            total: (wins + losses)
+        };
+       
+    }
+
+    IsWin(game, player)
+    {
+        let score = 0;
+        if (game["orange"]["stats"]["core"]["goals"] == game["orange"]["stats"]["core"]["goals_against"])
+        {
+            return [false, score];        
+        }   
+
+        let onOrange = false;
+
+        game["orange"]["players"].forEach(function(p) {
+            if (p["name"] == player)
+            {
+                onOrange = true;
+                score = p["stats"]["core"]["score"];
+            }
+        });
+        if (!onOrange && game["blue"]["players"].length > 0)
+        {
+            game["blue"]["players"].forEach(function(p) {
+                if (p["name"] == player)
+                {
+                    score = p["stats"]["core"]["score"];
+                }
+            });
+        }
+
+        if (onOrange)
+        {
+            if (game["orange"]["stats"]["core"]["goals"] > game["orange"]["stats"]["core"]["goals_against"])
+            {
+                return [true, score];        
+            }   
+            else 
+            {
+                return [false, score];
+            }
+        }
+        else {
+            if (game["blue"]["stats"]["core"]["goals"] > game["blue"]["stats"]["core"]["goals_against"])
+            {
+                return [true, score];        
+            }   
+            else 
+            {
+                return [false, score];
+            }
+        }
+    }
+
+    AddTableHeaders(data) {
         let svg = d3.select("#page-header");
 
         svg.append("text")
         .text("Select Player: ")
         .style("margin-top", "95px")
-        .style("margin-left", "10px");
+        .style("margin-left", "10px")
+        .style("color", "white");
 
         let playerSelect = svg.append("select")
         .attr("id", "player-select")
         .attr("label", "Select Player: ")
         .style("margin-top", "50px");
 
+ 
+        // When the toggle group slider is clicked, redraw the chart 
+        playerSelect.on("change", function () {
+           globalApplicationState.players.FillPlayersTable(data);
+        });
+
+        svg.append("text")
+        .text("--- or use chart below ---")
+        .style("margin-left", "10px")
+        .style("color", "white");
+
         let players = new Set();
-        this.data.forEach(function (game) {
+        data.forEach(function (game) {
             if (game["blue"]["players"] != undefined)
             {
                 game["blue"]["players"].forEach(player => players.add(player["name"]));
@@ -104,7 +379,7 @@ class Players {
         });
     }
 
-    AddSortingHandlers() {
+    AddSortingHandlers(data) {
         let headers = d3.select("#player-table");
 
         // When any of the headers are clicked
@@ -124,14 +399,14 @@ class Players {
                 // If this column is in ascending order     
                 if (this.headerData[0].ascending)
                 {
-                    this.data.sort((x, y) => x["date"] < y["date"] ? 1 : -1); // Sort the data
+                    data.sort((x, y) => x["date"] < y["date"] ? 1 : -1); // Sort the data
                     i.classed("no-display", false); // Remove the "no-display" class
                     i.classed("fa-solid fa-sort-down", false); // Add the sort up icon
                     i.classed("fa-solid fa-sort-up", true); // Remove the sort up button
                 }  
                 else
                 {                    
-                    this.data.sort((x, y) => x["date"] < y["date"] ? -1 : 1); // Sort the data
+                    data.sort((x, y) => x["date"] < y["date"] ? -1 : 1); // Sort the data
                     i.classed("no-display", false); // Remove the "no-display" class
                     i.classed("fa-solid fa-sort-up", false); // Remove the sort up icon
                     i.classed("fa-solid fa-sort-down", true); // Add the sort up button
@@ -146,7 +421,7 @@ class Players {
                 // If this column is in ascending order
                 if (this.headerData[1].ascending)
                 {           
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                             let isOrangeX = false;
                             let isOrangeY = false;
 
@@ -201,7 +476,7 @@ class Players {
                 }
                 else
                 {
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let isOrangeY = false;
 
@@ -263,7 +538,7 @@ class Players {
                 // If this column is in ascending order
                 if (this.headerData[2].ascending)
                 {                    
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let orangeGoalsX = 0;
                         let blueGoalsX = 0;
@@ -337,7 +612,7 @@ class Players {
                 }
                 else
                 {
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let orangeGoalsX = 0;
                         let blueGoalsX = 0;
@@ -421,7 +696,7 @@ class Players {
                 // If this column is in ascending order
                 if (this.headerData[3].ascending)
                 {                   
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let orangeAssistsX = 0;
                         let blueAssistsX = 0;
@@ -496,7 +771,7 @@ class Players {
                 }
                 else
                 {
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let orangeAssistsX = 0;
                         let blueAssistsX = 0;
@@ -580,7 +855,7 @@ class Players {
                 // If this column is in ascending order
                 if (this.headerData[3].ascending)
                 {                   
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let orangeSavesX = 0;
                         let blueSavesX = 0;
@@ -655,7 +930,7 @@ class Players {
                 }
                 else
                 {
-                    this.data.sort(function(x, y) {
+                    data.sort(function(x, y) {
                         let isOrangeX = false;
                         let orangeAssistsX = 0;
                         let blueAssistsX = 0;
@@ -732,11 +1007,12 @@ class Players {
                 this.headerData[3].ascending = !this.headerData[3].ascending;
             }
             // Redraw the table with the new sorted data
-            this.FillPlayersTable();
+            this.FillPlayersTable(data);
         });
     }
 
-    FillPlayersTable() {
+    FillPlayersTable(data) {
+
         // Reset table
         d3.select('#table-body')
             .selectAll('tr')
@@ -751,7 +1027,7 @@ class Players {
         let playerData = [];
         let gameSet = new Set();
 
-        this.data.forEach(function (game) {
+        data.forEach(function (game) {
             let players = [];
 
             if (!gameSet.has(game["id"]))
@@ -777,6 +1053,9 @@ class Players {
                 }
             }
         });
+
+        this.FillBubbleChart(playerData, playerName);
+        
         // add table row data
         let trs = d3.select('#table-body')
             .selectAll('tr')
@@ -968,20 +1247,22 @@ class Players {
     }
 
     RowClickHandler() {
-        globalApplicationState.players.FillOrangeScoreBoard.call(this);
-        globalApplicationState.players.FillBlueScoreBoard.call(this);
-        globalApplicationState.players.AddGameCoreStatsCharts.call(this);
-        globalApplicationState.players.AddButtonHandlers.call(this);
-    }
-
-    FillOrangeScoreBoard() {
+        d3.select("#scoreboards").style("display", "");
+        let data = d3.select(this)._groups["0"]["0"]["__data__"];
+        
         // Reset all "selected" elements 
         d3.select("#player-table").selectAll(".selected").classed("selected", false);
-
         // Update selected row color
         let row = d3.select(this).select("svg");
         row.classed("selected", true);
 
+        globalApplicationState.players.FillOrangeScoreBoard(data);
+        globalApplicationState.players.FillBlueScoreBoard(data);
+        globalApplicationState.players.AddGameCoreStatsCharts(data);
+        globalApplicationState.players.AddButtonHandlers(data);
+    }
+
+    FillOrangeScoreBoard(data) {
         // Reset table
         d3.select('#orange-table-body')
         .selectAll('tr')
@@ -993,10 +1274,9 @@ class Players {
             
         let table = d3.select("#orange-table");
 
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let gameData = data;
 
         this.orangePlayerData = gameData["orange"]["players"];
-        console.log(this.orangePlayerData);
             
         // add table row data
         let trs = d3.select('#orange-table-body')
@@ -1034,7 +1314,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["score"];
         })
-        .attr("transform", "translate(180,20)")
+        .attr("transform", "translate(195,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1045,7 +1325,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["goals"];
         })
-        .attr("transform", "translate(280,20)")
+        .attr("transform", "translate(310,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1056,7 +1336,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["assists"];
         })
-        .attr("transform", "translate(380,20)")
+        .attr("transform", "translate(430,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1067,7 +1347,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["saves"];
         })
-        .attr("transform", "translate(470,20)")
+        .attr("transform", "translate(540,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1078,7 +1358,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["shots"];
         })
-        .attr("transform", "translate(563,20)")
+        .attr("transform", "translate(645,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1089,19 +1369,12 @@ class Players {
         .text(function(d) {   
             return d["stats"]["demo"]["inflicted"];
         })
-        .attr("transform", "translate(645,20)")
+        .attr("transform", "translate(740,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
     }
 
-    FillBlueScoreBoard() {
-        // Reset all "selected" elements 
-        d3.select("#player-table").selectAll(".selected").classed("selected", false);
-
-        // Update selected row color
-        let row = d3.select(this).select("svg");
-        row.classed("selected", true);
-
+    FillBlueScoreBoard(data) {
         // Reset table
         d3.select('#blue-table-body')
         .selectAll('tr')
@@ -1113,10 +1386,9 @@ class Players {
             
         let table = d3.select("#blue-table");
 
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+        let gameData = data;
 
         this.bluePlayerData = gameData["blue"]["players"];
-        console.log(this.bluePlayerData);
             
         // add table row data
         let trs = d3.select('#blue-table-body')
@@ -1154,7 +1426,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["score"];
         })
-        .attr("transform", "translate(180,20)")
+        .attr("transform", "translate(195,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1165,7 +1437,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["goals"];
         })
-        .attr("transform", "translate(280,20)")
+        .attr("transform", "translate(310,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1176,7 +1448,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["assists"];
         })
-        .attr("transform", "translate(380,20)")
+        .attr("transform", "translate(430,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1187,7 +1459,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["saves"];
         })
-        .attr("transform", "translate(470,20)")
+        .attr("transform", "translate(540,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1198,7 +1470,7 @@ class Players {
         .text(function(d) {   
             return d["stats"]["core"]["shots"];
         })
-        .attr("transform", "translate(563,20)")
+        .attr("transform", "translate(645,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
 
@@ -1209,22 +1481,18 @@ class Players {
         .text(function(d) {   
             return d["stats"]["demo"]["inflicted"];
         })
-        .attr("transform", "translate(645,20)")
+        .attr("transform", "translate(740,20)")
         .style("font-size", "15px")
         .style("text-anchor", "middle");
     }
 
-    AddButtonHandlers() {
+    AddButtonHandlers(data) {
         let coreButton = d3.select("#core-button");
         let boostButton = d3.select("#boost-button");
         let otherButton = d3.select("#other-button");
 
-        let row = this;
-
-        boostButton.on("click", function() {globalApplicationState.players.AddBoostStatsCharts.call(row) });
-        coreButton.on("click", function() { globalApplicationState.players.AddGameCoreStatsCharts.call(this) });
-        //otherButton.on("click", globalApplicationState.players.AddGameOtherStatsCharts.call(this));
-        console.log(boostButton);
+        boostButton.on("click", function() {globalApplicationState.players.AddBoostStatsCharts(data) });
+        coreButton.on("click", function() { globalApplicationState.players.AddGameCoreStatsCharts(data) });
     }
 
     AddTooltipHandler(ttHTML, hoverObject) {
@@ -1255,7 +1523,7 @@ class Players {
             });
     }
 
-    AddGameCoreStatsCharts() {          
+    AddGameCoreStatsCharts(data) {          
         d3.select("#game-visualization-div").style("display", "");
         d3.select("#stat-visualization-div").style("display", "");
         d3.select("#game-visualizations").style("position", "");
@@ -1277,16 +1545,16 @@ class Players {
         .attr("width", "1100px")
         .attr("height", "430px");
 
-        svg.data(d3.select(this)._groups["0"]["0"]["__data__"]);
+        svg.data(data);
 
-        globalApplicationState.players.AddCoreStatsChart.call(this);
-        globalApplicationState.players.AddScoreChart.call(this);
-        globalApplicationState.players.AddShootingPercentageChart.call(this);
-        globalApplicationState.players.AddDemosChart.call(this);
+        globalApplicationState.players.AddCoreStatsChart(data);
+        globalApplicationState.players.AddScoreChart(data);
+        globalApplicationState.players.AddShootingPercentageChart(data);
+        globalApplicationState.players.AddDemosChart(data);
     }
 
-    AddCoreStatsChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddCoreStatsChart(data) {
+        let gameData = data;
         let groups = ["Goals", "Shots", "Assists", "Saves"];
 
         let svg = d3.select("#core-stats")
@@ -1387,8 +1655,6 @@ class Players {
                 tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["core"][types[i]] + ' </b></p>';
             });
 
-            console.log(tooltipHTML);
-
             globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
         }
 
@@ -1426,7 +1692,7 @@ class Players {
         .data(blueData)
         .enter()
         .append("g")
-            .attr("transform", function(d) { console.log(d.key); return "translate(" + (x(d.key) + 140) + ",10)"; })
+            .attr("transform", function(d) { return "translate(" + (x(d.key) + 140) + ",10)"; })
         .selectAll("rect")
         .data(d => [d])
         .enter().append("rect")
@@ -1442,7 +1708,6 @@ class Players {
         // Add tooltip handlers
         rect = d3.selectAll(".blue-core-rect");
         players = this.bluePlayerData;
-        console.log(players);
         for (var i = 0; i < 4; i++)
         {
             let rectFiltered = rect.filter(function() {
@@ -1454,16 +1719,13 @@ class Players {
             players.forEach( (d) => {
                 tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["core"][types[i]] + '</b></p>';
             });
-
-            console.log(tooltipHTML);
     
             globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
         }
     }
     
-
-    AddScoreChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddScoreChart(data) {
+        let gameData = data;
         let groups = ["Orange", "Blue"];
 
         let svg = d3.select("#score-stats")
@@ -1528,8 +1790,8 @@ class Players {
         .attr("transform", "translate(170, 50)");
     }
 
-    AddShootingPercentageChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddShootingPercentageChart(data) {
+        let gameData = data;
         let groups = ["Orange", "Blue"];
 
         let svg = d3.select("#shotpercentage-stats")
@@ -1590,8 +1852,8 @@ class Players {
         .attr("transform", "translate(170, 50)");
     }
 
-    AddDemosChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddDemosChart(data) {
+        let gameData = data;
         let groups = ["Orange", "Blue"];
 
         let svg = d3.select("#demos-stats")
@@ -1652,7 +1914,7 @@ class Players {
         .attr("transform", "translate(170, 50)");
     }
 
-    AddBoostStatsCharts() {
+    AddBoostStatsCharts(data) {
         d3.select("#game-visualizations").style("position", "absolute");
         d3.select("#stat-list").style("margin-top", "440px");
         // Hide other svgs
@@ -1669,13 +1931,13 @@ class Players {
         d3.select("#team-time-boost-stats").style("display", "");
         d3.select("#boost-pads-stats").style("display", "");
 
-        globalApplicationState.players.AddTeamBPMChart.call(this);
-        globalApplicationState.players.AddTeamAvgBoostChart.call(this);
-        globalApplicationState.players.AddTeamTimeBoostChart.call(this);
+        globalApplicationState.players.AddTeamBPMChart(data);
+        globalApplicationState.players.AddTeamAvgBoostChart(data);
+        globalApplicationState.players.AddTeamTimeBoostChart(data);
     }
 
-    AddTeamBPMChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddTeamBPMChart(data) {
+        let gameData = data;
         let groups = ["Boost-Per-Minute"];
 
         let svg = d3.select("#team-bpm-stats")
@@ -1725,8 +1987,8 @@ class Players {
         .attr("fill", "blue");
     }
 
-    AddTeamAvgBoostChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddTeamAvgBoostChart(data) {
+        let gameData = data;
         let groups = ["Avg. Boost Amount"];
 
         let svg = d3.select("#team-avg-boost-stats")
@@ -1742,8 +2004,6 @@ class Players {
 
         // Blue
         let blueAvgAmountData = gameData["blue"]["stats"]["boost"]["avg_amount"];
-
-        console.log(gameData);
 
         // Add X axis
         var x = d3.scaleBand()
@@ -1778,8 +2038,8 @@ class Players {
         .attr("fill", "blue");
     }
 
-    AddTeamTimeBoostChart() {
-        let gameData = d3.select(this)._groups["0"]["0"]["__data__"];
+    AddTeamTimeBoostChart(data) {
+        let gameData = data;
         let groups = ["Time at 0 Boost", "Time at 100 Boost"];
 
         let svg = d3.select("#team-time-boost-stats")
@@ -1868,8 +2128,6 @@ class Players {
                 tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + ' </b></p>';
             });
 
-            console.log(tooltipHTML);
-
             globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
         }
 
@@ -1922,13 +2180,7 @@ class Players {
                 tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + ' </b></p>';
             });
 
-            console.log(tooltipHTML);
-
             globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
         }
-    }
-
-    AddGameOtherStatsCharts() {
-
     }
 }

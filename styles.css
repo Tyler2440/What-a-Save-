@@ -19,6 +19,7 @@ main {
 #page-header {
     width: 100%;
     height: 100px;
+    margin-left: 120px;
 }
 
 #player-table {
@@ -28,7 +29,7 @@ main {
     table-layout: fixed;
     border-style: solid;
     background-color: lightgray;
-    
+    grid-column: 1;
 }
 
 .scrollable {
@@ -37,6 +38,7 @@ main {
     width: 820px;
     max-height: 650px;
     overflow-y: auto;
+    margin-top: 100px;
 }
 
 #table-headers {
@@ -58,27 +60,65 @@ main {
     float: right;
     position: sticky;
     display: block;
-    /* background-color: white; */
+    background-color: teal;
     margin-left: 30px;
+}
+
+#beeswarm-chart {
+    height: 250px;
+    width: 800px;
+    float: right;
+    position: sticky;
+    display: block;
+    background-color: white;
+    margin-left: 30px;
+}
+
+#selection-container {
+    display:grid;
+    grid-template-columns: 2;
+    grid-template-rows: 2;
+}
+
+#table-charts {
+    grid-row:1;
+}
+
+#scoreboards {
+    grid-row:2;
+    width:1800px;
+    margin-left: 5px;
+}
+
+#charts {
+    grid-column:2;
+    margin-right: 150px;
 }
 
 .scoreboard {
     height: 100%;
     width: 800px;
-    float: right;
+    /* float: right; */
     table-layout: fixed;
-    margin-left: 30px;
+    /* margin-left: 30px; */
+    margin-top: 50px;
+    /* position: relative; */
+
 }
 
 #orange-table {
     background-color: orange;
-    margin-top: 40px;
-    margin-bottom: 0;
+    /* margin-top: 40px; */
+    /* margin-bottom: 0; */
+    grid-column:1;
+    /* float: left; */
 }
 
 #blue-table {
     background-color:rgb(69, 69, 231);
-    margin-top: 10px;
+    /* margin-top: 10px; */
+    grid-column:2;
+    /* float: right; */
 }
 
 .scoreboard tr {

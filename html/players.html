@@ -39,103 +39,113 @@
         </div>
     </nav>
 
-        <div id="page-header"> </div>
-        <div class="scrollable">
-            <table id="player-table">
-                <thead style="position: sticky; top: 0; background-color: gray; color: white;">
-                    <tr id="column-headers">
-                        <th class="sortable">
-                            Game
-                            <i class="fas no-display"></i>
-                        </th>
-                        <th class="sortable">
-                            W/L
-                            <i class="fas no-display"></i>
-                        </th>
-                        <th class="sortable">
-                            Goals
-                            <i class="fas no-display"></i>
-                        </th>
-                        <th class="sortable">
-                            Assists
-                            <i class="fas no-display"></i>
-                        </th>
-                        <th class="sortable">
-                            Saves
-                            <i class="fas no-display"></i>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody id="table-body">
-
-                </tbody>
-                        
-            </table>
-        </div>
-        <div class="container">
-            <div class="row">        
-                <svg id="bubble-chart"></svg>
-
-                <table id="orange-table" class="scoreboard">
-                        <thead style="position: sticky; top: 0; background-color: white; color: black;">
-                            <tr id="orange-column-headers" class="scoreboard-headers">
-                                <th id="player-orange-header">
-                                    Player
+        
+        <div id="selection-container"> 
+            <div id="table-charts" style="display: grid;">
+                <div class="scrollable">
+                    <table id="player-table">
+                        <thead style="position: sticky; top: 0; background-color: gray; color: white;">
+                            <tr id="column-headers">
+                                <th class="sortable">
+                                    Game
+                                    <i class="fas no-display"></i>
                                 </th>
-                                <th id="score-orange-header" style="padding-left: 63px;">
-                                    Score
+                                <th class="sortable">
+                                    W/L
+                                    <i class="fas no-display"></i>
                                 </th>
-                                <th id="goals-orange-header" style="padding-left: 63px;">
+                                <th class="sortable">
                                     Goals
+                                    <i class="fas no-display"></i>
                                 </th>
-                                <th id="assists-orange-header" style="padding-left: 63px;">
+                                <th class="sortable">
                                     Assists
+                                    <i class="fas no-display"></i>
                                 </th>
-                                <th id="saves-orange-header" style="padding-left: 63px;">
+                                <th class="sortable">
                                     Saves
-                                </th>
-                                <th id="shots-orange-header" style="padding-left: 52px;">
-                                    Shots
-                                </th>
-                                <th id="demos-orange-header" style="padding-left: 31px;">
-                                    Demos
+                                    <i class="fas no-display"></i>
                                 </th>
                             </tr>
                         </thead>
 
-                        <tbody id="orange-table-body">  </tbody>
-                        
-                </table>
+                        <tbody id="table-body">
 
-                <table id="blue-table" class="scoreboard">
-                        <thead style="position: sticky; top: 0; background-color: white; color: black;">
-                            <tr id="blue-column-headers" class="scoreboard-headers">
-                                <th id="player-blue-header">
-                                    Player
-                                </th>
-                                <th id="score-blue-header" style="padding-left: 63px;">
-                                    Score
-                                </th>
-                                <th id="goals-blue-header" style="padding-left: 63px;">
-                                    Goals
-                                </th>
-                                <th id="assists-blue-header" style="padding-left: 63px;">
-                                    Assists
-                                </th>
-                                <th id="saves-blue-header" style="padding-left: 60px;">
-                                    Saves
-                                </th>
-                                <th id="shots-blue-header" style="padding-left: 52px;">
-                                    Shots
-                                </th>
-                                <th id="demos-blue-header" style="padding-left: 31px;">
-                                    Demos
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="blue-table-body"></tbody>
-                </table>
+                        </tbody>
+                                
+                    </table>
+                </div>
+                <div id="charts"> 
+                    <div id="page-header"> </div>
+                    <svg id="beeswarm-chart"></svg>
+                    <svg id="bubble-chart"></svg>
+                </div>
+            </div>
+
+            <div id="scoreboards" class="container" style="display: none;">
+                <div class="row">    
+                    <div class="col-md-10">  
+                        <table id="orange-table" class="scoreboard">
+                            <thead style="position: sticky; top: 0; background-color: white; color: black;">
+                                <tr id="orange-column-headers" class="scoreboard-headers">
+                                    <th id="player-orange-header">
+                                        Player
+                                    </th>
+                                    <th id="score-orange-header" style="padding-left: 63px;">
+                                        Score
+                                    </th>
+                                    <th id="goals-orange-header" style="padding-left: 63px;">
+                                        Goals
+                                    </th>
+                                    <th id="assists-orange-header" style="padding-left: 63px;">
+                                        Assists
+                                    </th>
+                                    <th id="saves-orange-header" style="padding-left: 63px;">
+                                        Saves
+                                    </th>
+                                    <th id="shots-orange-header" style="padding-left: 52px;">
+                                        Shots
+                                    </th>
+                                    <th id="demos-orange-header" style="padding-left: 31px;">
+                                        Demos
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="orange-table-body">  </tbody>
+                        </table>
+                    </div> 
+                    <div class="col-md-2">  
+                        <table id="blue-table" class="scoreboard">
+                            <thead style="position: sticky; top: 0; background-color: white; color: black;">
+                                <tr id="blue-column-headers" class="scoreboard-headers">
+                                    <th id="player-blue-header">
+                                        Player
+                                    </th>
+                                    <th id="score-blue-header" style="padding-left: 63px;">
+                                        Score
+                                    </th>
+                                    <th id="goals-blue-header" style="padding-left: 63px;">
+                                        Goals
+                                    </th>
+                                    <th id="assists-blue-header" style="padding-left: 63px;">
+                                        Assists
+                                    </th>
+                                    <th id="saves-blue-header" style="padding-left: 60px;">
+                                        Saves
+                                    </th>
+                                    <th id="shots-blue-header" style="padding-left: 52px;">
+                                        Shots
+                                    </th>
+                                    <th id="demos-blue-header" style="padding-left: 31px;">
+                                        Demos
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="blue-table-body"></tbody>
+                        </table>
+                    </div> 
+                </div>
             </div>
         
             <div class="row">
@@ -154,7 +164,6 @@
                         <p style="color: white;">Choose a statistic category:</p>
                         <li><button id="core-button" aria-setsize="4" aria-posinset="1" style="width: 85px;">Core</button></li>
                         <li><button id="boost-button" aria-setsize="4" aria-posinset="2">Boost</button></li>
-                        <li><button id="other-button" aria-setsize="4" aria-posinset="3">Other</button></li>
                     </ul>
                 </div> 
                 <div id="extra-visualizations" class="col-sm" style="margin-top: 75px; margin-left: 60px;">
