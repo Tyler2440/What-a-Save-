@@ -40,6 +40,37 @@ class Players {
         this.AddSortingHandlers();
         this.FillPlayersTable(this.data);
         this.FillBeeSwarmChart(this.data);
+
+        let playerName = d3.select("#player-select  option:checked").property("label");
+        let initialData = [];
+        let gameSet = new Set();
+        this.data.forEach(function (game) {
+            let players = [];
+
+            if (!gameSet.has(game["id"]))
+            {
+                gameSet.add(game["id"]);
+
+                if (game["blue"]["players"] != undefined)
+                {
+                    game["blue"]["players"].forEach(player => players.push(player["name"]));
+                }
+                
+                if (game["orange"]["players"] != undefined)
+                {
+                    game["orange"]["players"].forEach(player => players.push(player["name"]));
+                }
+    
+                if (players.includes(playerName))
+                {
+                    if (game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+                    {
+                        initialData.push(game);
+                    }       
+                }
+            }
+        });
+        this.FillBubbleChart(initialData, playerName);
     }
 
     GetPlayers(data) {
@@ -98,11 +129,16 @@ class Players {
                 // && y0 <= y(d.value)
                 // && y(d.value) < y1)
             .attr("fill", "white")
-            .attr("stroke", "black");//.data();
+            .attr("stroke", "black").data();
 
-            console.log(value);
+            let tableData = [];
+
+            value.forEach(function(key) {
+                tableData.push(key.key);
+            })
+
             // Redraw the table with the new, filtered data
-            // globalApplicationState.players.drawTable(value);
+            globalApplicationState.players.FillPlayersTable(tableData);
         }
     }
 
@@ -119,7 +155,37 @@ class Players {
         let playersObj = this;
         let maxScore = 0;
 
-        data.forEach(function(game) {
+        let playerData = [];
+        let gameSet = new Set();
+
+        data.forEach(function (game) {
+            let players = [];
+
+            if (!gameSet.has(game["id"]))
+            {
+                gameSet.add(game["id"]);
+
+                if (game["blue"]["players"] != undefined)
+                {
+                    game["blue"]["players"].forEach(player => players.push(player["name"]));
+                }
+                
+                if (game["orange"]["players"] != undefined)
+                {
+                    game["orange"]["players"].forEach(player => players.push(player["name"]));
+                }
+    
+                if (players.includes(playerName))
+                {
+                    if (game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+                    {
+                        playerData.push(game);
+                    }       
+                }
+            }
+        });
+
+        playerData.forEach(function(game) {
             let result = playersObj.IsWin(game, playerName);
             let win = result[0];
             let score = result[1];
@@ -151,8 +217,7 @@ class Players {
         x.nice();
 
         //svg.remove(".brush");
-        
-        
+               
         svg.append("g")
         .attr("transform", "translate(30,300)")
         .call(d3.axisBottom(x));
@@ -163,7 +228,7 @@ class Players {
         .range([0, 290])
         .padding([0.2]);
         
-        this.setupBrushes(data, x, y);
+        this.setupBrushes(playerData, x, y);
         
         svg.append("g")
         .attr("transform", "translate(30,10)")
@@ -358,7 +423,7 @@ class Players {
                 score = p["stats"]["core"]["score"];
             }
         });
-        if (!onOrange && game["blue"]["players"].length > 0)
+        if (!onOrange && game["blue"]["players"] != undefined && game["blue"]["players"].length > 0)
         {
             game["blue"]["players"].forEach(function(p) {
                 if (p["name"] == player)
@@ -405,11 +470,9 @@ class Players {
         .attr("label", "Select Player: ")
         .style("margin-top", "50px");
 
- 
-        // When the toggle group slider is clicked, redraw the chart 
-        playerSelect.on("change", function () {
-           globalApplicationState.players.FillPlayersTable(data);
-        });
+
+        let playerData = [];
+        let gameSet = new Set();
 
         svg.append("text")
         .text("--- or use chart below ---")
@@ -432,6 +495,42 @@ class Players {
         players.forEach( function(player) {
             playerSelect.append("option")
             .attr("label", player);
+        });
+
+        let playerName = d3.select("#player-select  option:checked").property("label");
+        
+        data.forEach(function (game) {
+            let players = [];
+
+            if (!gameSet.has(game["id"]))
+            {
+                gameSet.add(game["id"]);
+
+                if (game["blue"]["players"] != undefined)
+                {
+                    game["blue"]["players"].forEach(player => players.push(player["name"]));
+                }
+                
+                if (game["orange"]["players"] != undefined)
+                {
+                    game["orange"]["players"].forEach(player => players.push(player["name"]));
+                }
+    
+                if (players.includes(playerName))
+                {
+                    if (game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+                    {
+                        playerData.push(game);
+                    }       
+                }
+            }
+        });
+        
+        // When the toggle group slider is clicked, redraw the chart 
+        playerSelect.on("change", function () {
+           globalApplicationState.players.FillPlayersTable(data);
+           playerName = d3.select("#player-select  option:checked").property("label");
+           globalApplicationState.players.FillBubbleChart(data, playerName);
         });
     }
 
@@ -1109,8 +1208,6 @@ class Players {
                 }
             }
         });
-
-        this.FillBubbleChart(playerData, playerName);
         
         // add table row data
         let trs = d3.select('#table-body')
