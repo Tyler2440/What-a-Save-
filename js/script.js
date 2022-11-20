@@ -1,5 +1,5 @@
 async function loadData () {
-    const data = await d3.json('/Data/match_data.json');
+    const data = await d3.json('Data/match_data.json');
     return { data };
   }
  
