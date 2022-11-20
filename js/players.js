@@ -37,7 +37,7 @@ class Players {
         console.log(data);
 
         this.AddTableHeaders(this.data);
-        this.AddSortingHandlers();
+        this.AddSortingHandlers(this.data);
         this.FillPlayersTable(this.data);
         this.FillBeeSwarmChart(this.data);
 
@@ -120,7 +120,7 @@ class Players {
             const [x0, x1] = selection; 
 
             // Fill all circles gray
-            circles.attr("fill", "gray").attr("stroke", "lightgray");
+            circles.attr("fill", "gray").attr("stroke", "black");
                             
             // We apply the filter to find the dots that are inside the brush
             let value = circles
