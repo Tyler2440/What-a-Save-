@@ -143,6 +143,7 @@ class Players {
     }
 
     FillBubbleChart(data, playerName) {
+        console.log("WOOOOWEEEEEE bubble time bb");
         let svg = d3.select("#bubble-chart");
         let groups = ["Win", "Loss"];
     
@@ -388,6 +389,11 @@ class Players {
             .attr("transform", "translate(0,35)")
             .call(d3.axisBottom(xScale));
 
+        beeSvg.append("text")
+            .attr('x', 300)
+            .attr('y', 20)
+            .text("Win / Loss Ratio of Player")
+
         let rScale = d3.scaleLinear()
             .domain([9, maxTotal])
             .range([4,10]);
@@ -422,8 +428,8 @@ class Players {
                 let name = d3.select(this).attr("id");
 
                 // let index = dropdown.property(name);
-                //console.log(dropdown["_groups"][0][0]);
-                //dropdown.node().value = name;
+                // console.log(dropdown["_groups"][0][0]);
+                // dropdown.node().value = name;
                 // console.log(name);
                 // dropdown.property('value', name)
 
@@ -435,13 +441,12 @@ class Players {
                         index = i;
                     }
                 }
-                // console.log(index);
-                console.log(dropdown.property('selected'));
-                console.log(dropdown.property('value'));
 
-                //dropdown.property('selected', index);
+                dropdown.property('selectedIndex', index);
 
-
+                globalApplicationState.players.FillPlayersTable(data);
+                //playerName = d3.select("#player-select  option:checked").property("label");
+                globalApplicationState.players.FillBubbleChart(data, name);
             });
         });
 
@@ -501,6 +506,9 @@ class Players {
             }
         });
 
+        if (losses == 0) {
+            losses = 1;
+        }
         let ratio = wins / losses;
         return {
             ratio: ratio, 
@@ -1781,11 +1789,11 @@ class Players {
 
     AddGameCoreStatsCharts(data) {          
         d3.select("#game-visualization-div").style("display", "");
-        d3.select("#stat-visualization-div").style("display", "");
+        d3.select("#stat-visualization-div").style("display", ""); //margin left 400
         d3.select("#game-visualizations").style("position", "");
         d3.select("#stat-list").style("margin-top", "0px");
         
-        d3.select("#core-stats").style("display", "");
+        d3.select("#core-stats").style("display", ""); //margin left 400
         d3.select("#score-stats").style("display", "");
         d3.select("#shotpercentage-stats").style("display", "");
         d3.select("#demos-stats").style("display", "");
@@ -2028,22 +2036,29 @@ class Players {
         .call(d3.axisLeft(y))
 
         // Add orange bar
-        svg.append("rect")
-        .attr("x", 50)
-        .attr("y", y(orangeScoreData))
-        .attr("width", 75)
-        .attr("height", 400 - y(orangeScoreData))
-        .attr("fill", "orange")
-        .attr("transform", "translate(15, 50)");
+        let oRect = svg.append("rect")
+            .attr("x", 50)
+            .attr("y", y(orangeScoreData))
+            .attr("width", 75)
+            .attr("height", 400 - y(orangeScoreData))
+            .attr("fill", "orange")
+            .attr("transform", "translate(15, 50)");
+
+        let ttHTMLOrange = "<h6> Orange Score: " + orangeScoreData + " pts</h6>";
        
-        // Add orange bar
-        svg.append("rect")
-        .attr("x", 50)
-        .attr("y", y(blueScoreData))
-        .attr("width", 75)
-        .attr("height", 400 - y(blueScoreData))
-        .attr("fill", "blue")
-        .attr("transform", "translate(170, 50)");
+        // Add blue bar
+        let bRect = svg.append("rect")
+            .attr("x", 50)
+            .attr("y", y(blueScoreData))
+            .attr("width", 75)
+            .attr("height", 400 - y(blueScoreData))
+            .attr("fill", "blue")
+            .attr("transform", "translate(170, 50)");
+
+        let ttHTMLBlue = "<h6> Blue Score: " + blueScoreData + " pts</h6>";
+
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
     }
 
     AddShootingPercentageChart(data) {
@@ -2090,22 +2105,29 @@ class Players {
         .call(d3.axisLeft(y))
 
         // Add orange bar
-        svg.append("rect")
-        .attr("x", 50)
-        .attr("y", y(orangeShotsPercentageData))
-        .attr("width", 75)
-        .attr("height", 400 - y(orangeShotsPercentageData))
-        .attr("fill", "orange")
-        .attr("transform", "translate(15, 50)");
+        let oRect = svg.append("rect")
+            .attr("x", 50)
+            .attr("y", y(orangeShotsPercentageData))
+            .attr("width", 75)
+            .attr("height", 400 - y(orangeShotsPercentageData))
+            .attr("fill", "orange")
+            .attr("transform", "translate(15, 50)");
+
+        let ttHTMLOrange = "<h6> Orange Shooting Percentage: " + orangeShotsPercentageData + "%</h6>";
        
         // Add orange bar
-        svg.append("rect")
-        .attr("x", 50)
-        .attr("y", y(blueShotsPercentageData))
-        .attr("width", 75)
-        .attr("height", 400 - y(blueShotsPercentageData))
-        .attr("fill", "blue")
-        .attr("transform", "translate(170, 50)");
+        let bRect = svg.append("rect")
+            .attr("x", 50)
+            .attr("y", y(blueShotsPercentageData))
+            .attr("width", 75)
+            .attr("height", 400 - y(blueShotsPercentageData))
+            .attr("fill", "blue")
+            .attr("transform", "translate(170, 50)");
+
+        let ttHTMLBlue = "<h6> Blue Shooting Percentage: " + blueShotsPercentageData + "%</h6>";
+
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
     }
 
     AddDemosChart(data) {
@@ -2152,22 +2174,29 @@ class Players {
         .call(d3.axisLeft(y))
 
         // Add orange bar
-        svg.append("rect")
+        let oRect = svg.append("rect")
         .attr("x", 50)
         .attr("y", y(orangeDemosInflictedData))
         .attr("width", 75)
         .attr("height", 400 - y(orangeDemosInflictedData))
         .attr("fill", "orange")
         .attr("transform", "translate(15, 50)");
+
+        let ttHTMLOrange = "<h6> Orange Demos: " + orangeDemosInflictedData + "</h6>";
        
         // Add orange bar
-        svg.append("rect")
+        let bRect = svg.append("rect")
         .attr("x", 50)
         .attr("y", y(blueDemosInflictedData))
         .attr("width", 75)
         .attr("height", 400 - y(blueDemosInflictedData))
         .attr("fill", "blue")
         .attr("transform", "translate(170, 50)");
+
+        let ttHTMLBlue = "<h6> Blue Demos: " + blueDemosInflictedData + "</h6>";
+
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
     }
 
     AddBoostStatsCharts(data) {
