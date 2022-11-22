@@ -148,6 +148,12 @@ class Players {
         svg.selectAll("text").remove();
         svg.selectAll("line").remove();
 
+        svg.append("text")
+        .attr('x', 240)
+        .attr('y', 20)
+        .text("List of Games Played by " + playerName)
+        .style("fill", "white");
+
         let winData = [];
         let lossData = [];
         let playersObj = this;
