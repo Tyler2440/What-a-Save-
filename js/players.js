@@ -398,7 +398,8 @@ class Players {
         beeSvg.append("text")
             .attr('x', 300)
             .attr('y', 20)
-            .text("Win / Loss Ratio of Player");
+            .text("Win / Loss Ratio of Player")
+            .style("fill", "white");
 
         let rScale = d3.scaleLinear()
             .domain([9, maxTotal])
@@ -424,7 +425,7 @@ class Players {
 
         d3.forceSimulation(swarmData)
             .force("x", d3.forceX(d => xScale(d.wl)).strength(3))
-            .force("y", d3.forceY(d => d.y+105).strength(0.4))
+            .force("y", d3.forceY(d => d.y+105).strength(0.05))
             .force("collide", d3.forceCollide(d => rScale(d.total) + 1))
             .alphaDecay(0)
             .alpha(0.3)
