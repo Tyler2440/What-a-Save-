@@ -1789,11 +1789,11 @@ class Players {
 
     AddGameCoreStatsCharts(data) {          
         d3.select("#game-visualization-div").style("display", "");
-        d3.select("#stat-visualization-div").style("display", ""); //margin left 400
+        d3.select("#stat-visualization-div").style("display", "").style("margin-left", "400px"); //margin left 400
         d3.select("#game-visualizations").style("position", "");
         d3.select("#stat-list").style("margin-top", "0px");
         
-        d3.select("#core-stats").style("display", ""); //margin left 400
+        d3.select("#core-stats").style("display", "").style("margin-left", "400px"); //margin left 400
         d3.select("#score-stats").style("display", "");
         d3.select("#shotpercentage-stats").style("display", "");
         d3.select("#demos-stats").style("display", "");
@@ -2044,7 +2044,13 @@ class Players {
             .attr("fill", "orange")
             .attr("transform", "translate(15, 50)");
 
-        let ttHTMLOrange = "<h6> Orange Score: " + orangeScoreData + " pts</h6>";
+        //tooltip html
+        let players = this.orangePlayerData;
+        let ttHTMLOrange = '<center><h5>' + orangeScoreData + ' '  + ' pts</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["core"]["score"] + '</b></p>';
+        });
        
         // Add blue bar
         let bRect = svg.append("rect")
@@ -2055,7 +2061,13 @@ class Players {
             .attr("fill", "blue")
             .attr("transform", "translate(170, 50)");
 
-        let ttHTMLBlue = "<h6> Blue Score: " + blueScoreData + " pts</h6>";
+        //tooltip html
+        players = this.bluePlayerData;
+        let ttHTMLBlue = '<center><h5>' + blueScoreData + ' '  + ' pts</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["core"]["score"] + '</b></p>';
+        });
 
         globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
         globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
@@ -2113,7 +2125,13 @@ class Players {
             .attr("fill", "orange")
             .attr("transform", "translate(15, 50)");
 
-        let ttHTMLOrange = "<h6> Orange Shooting Percentage: " + orangeShotsPercentageData + "%</h6>";
+        //tooltip html
+        let players = this.orangePlayerData;
+        let ttHTMLOrange = '<center><h5>' + orangeShotsPercentageData + ' '  + ' %</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["core"]["shooting_percentage"] + '%</b></p>';
+        });
        
         // Add orange bar
         let bRect = svg.append("rect")
@@ -2124,7 +2142,13 @@ class Players {
             .attr("fill", "blue")
             .attr("transform", "translate(170, 50)");
 
-        let ttHTMLBlue = "<h6> Blue Shooting Percentage: " + blueShotsPercentageData + "%</h6>";
+        //tooltip html
+        players = this.bluePlayerData;
+        let ttHTMLBlue = '<center><h5>' + blueShotsPercentageData + ' '  + ' %</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["core"]["shooting_percentage"] + '%</b></p>';
+        });
 
         globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
         globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
@@ -2182,7 +2206,13 @@ class Players {
         .attr("fill", "orange")
         .attr("transform", "translate(15, 50)");
 
-        let ttHTMLOrange = "<h6> Orange Demos: " + orangeDemosInflictedData + "</h6>";
+        //tooltip html
+        let players = this.orangePlayerData;
+        let ttHTMLOrange = '<center><h5>' + orangeDemosInflictedData + ' '  + ' demos</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["demo"]["inflicted"] + '</b></p>';
+        });
        
         // Add orange bar
         let bRect = svg.append("rect")
@@ -2193,7 +2223,13 @@ class Players {
         .attr("fill", "blue")
         .attr("transform", "translate(170, 50)");
 
-        let ttHTMLBlue = "<h6> Blue Demos: " + blueDemosInflictedData + "</h6>";
+        //tooltip html
+        players = this.bluePlayerData;
+        let ttHTMLBlue = '<center><h5>' + blueDemosInflictedData + ' '  + ' demos</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["demo"]["inflicted"] + '</b></p>';
+        });
 
         globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
         globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
@@ -2257,19 +2293,38 @@ class Players {
         .attr("transform", "translate(40,10)")
         .call(d3.axisLeft(y));
 
-        svg.append("rect")
+        let oRect = svg.append("rect")
         .attr("x", 65)
         .attr("y", y(orangeBPMData)+10)
         .attr("width", 150)
         .attr("height", 400-y(orangeBPMData))
         .attr("fill", "orange");
+
+        //tooltip html
+        let players = this.orangePlayerData;
+        let ttHTMLOrange = '<center><h5>' + gameData["orange"]["stats"]["boost"]["bpm"] + ' '  + ' BPM</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["bpm"] + '</b></p>';
+        });
         
-        svg.append("rect")
+        let bRect = svg.append("rect")
         .attr("x", 215)
         .attr("y", y(blueBPMData)+10)
         .attr("width", 150)
         .attr("height", 400-y(blueBPMData))
         .attr("fill", "blue");
+
+        //tooltip html
+        players = this.bluePlayerData;
+        let ttHTMLBlue = '<center><h5>' + gameData["blue"]["stats"]["boost"]["bpm"] + ' '  + ' BPM</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["bpm"] + '</b></p>';
+        });
+
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
     }
 
     AddTeamAvgBoostChart(data) {
@@ -2308,19 +2363,41 @@ class Players {
         .attr("transform", "translate(40,10)")
         .call(d3.axisLeft(y));
 
-        svg.append("rect")
+        let oRect = svg.append("rect")
         .attr("x", 65)
         .attr("y", y(orangeAvgAmountData)+10)
         .attr("width", 150)
         .attr("height", 400-y(orangeAvgAmountData))
         .attr("fill", "orange");
+
+
+        //tooltip html
+        let players = this.orangePlayerData;
+        let ttHTMLOrange = '<center><h5>' + gameData["orange"]["stats"]["boost"]["avg_amount"] + ' '  + ' Boost</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["avg_amount"] + '</b></p>';
+        });
+
+
         
-        svg.append("rect")
+        let bRect = svg.append("rect")
         .attr("x", 215)
         .attr("y", y(blueAvgAmountData)+10)
         .attr("width", 150)
         .attr("height", 400-y(blueAvgAmountData))
         .attr("fill", "blue");
+
+        //tooltip html
+        players = this.bluePlayerData;
+        let ttHTMLBlue = '<center><h5>' + gameData["blue"]["stats"]["boost"]["avg_amount"] + ' '  + ' Boost</h5></center>';
+            //var tooltipHTML = '';
+        players.forEach( (d) => {
+            ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["avg_amount"] + '</b></p>';
+        });
+
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLOrange, oRect);
+        globalApplicationState.players.AddTooltipHandler.call(this, ttHTMLBlue, bRect);
     }
 
     AddTeamTimeBoostChart(data) {
@@ -2364,10 +2441,12 @@ class Players {
 
         orangeData.push({
             key: "Time at 0 Boost",
+            dataKey: "time_zero_boost",
             value: orangeTimeZeroData
         });
         orangeData.push({
             key: "Time at 100 Boost",
+            dataKey: "time_full_boost",
             value: orangeTimeFullData
         });
 
@@ -2386,9 +2465,9 @@ class Players {
         .selectAll("rect")
         .data(d => [d])
         .enter().append("rect")
-            .attr("class", "orange-boost-rect")
+            .attr("class", "orange-boost-time-rect")
             .attr("team", "orange")
-            .attr("type", function(d) {return d.key.toLowerCase()})
+            .attr("type", function(d) {return d.dataKey.toLowerCase()})
             .attr("x", function(d) { return xSubgroup(d.key); })
             .attr("y", function(d) { return y(d.value); })
             .attr("width", 150)
@@ -2397,20 +2476,20 @@ class Players {
 
 
         // Add tooltip handlers
-        let rect = d3.selectAll(".orange-boost-rect");
+        let rect = d3.selectAll(".orange-boost-time-rect");
         let types = ["time_zero_boost", "time_full_boost"];
         let players = this.orangePlayerData;
 
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 2; i++)
         {
             let rectFiltered = rect.filter(function() {
                 return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "orange";
             });
 
-            var tooltipHTML = '<center><h5>' + gameData["orange"]["stats"]["boost"][types[i]] + ' '  + types[i] + '</h5></center>';
+            var tooltipHTML = '<center><h5>' + gameData["orange"]["stats"]["boost"][types[i]] + ' '  + ' Seconds</h5></center>';
                 //var tooltipHTML = '';
             players.forEach( (d) => {
-                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + ' </b></p>';
+                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + '</b></p>';
             });
 
             globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
@@ -2421,10 +2500,12 @@ class Players {
 
         blueData.push({
             key: "Time at 0 Boost",
+            dataKey: "time_zero_boost",
             value: blueTimeZeroData
         });
         blueData.push({
             key: "Time at 100 Boost",
+            dataKey: "time_full_boost",
             value: blueTimeFullData
         });
 
@@ -2439,9 +2520,9 @@ class Players {
         .selectAll("rect")
         .data(d => [d])
         .enter().append("rect")
-            .attr("class", "blue-boost-rect")
+            .attr("class", "blue-boost-time-rect")
             .attr("team", "blue")
-            .attr("type", function(d) {return d.key.toLowerCase()})
+            .attr("type", function(d) {return d.dataKey.toLowerCase()})
             .attr("x", function(d) { return xSubgroup(d.key); })
             .attr("y", function(d) { return y(d.value); })
             .attr("width", 150)
@@ -2449,20 +2530,20 @@ class Players {
             .attr("fill", function(d) { return "blue"; });
 
         // Add tooltip handlers
-        rect = d3.selectAll(".blue-boost-rect");
+        rect = d3.selectAll(".blue-boost-time-rect");
         types = ["time_zero_boost", "time_full_boost"];
         players = this.bluePlayerData;
 
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 2; i++)
         {
             let rectFiltered = rect.filter(function() {
                 return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "blue";
             });
 
-            var tooltipHTML = '<center><h5>' + gameData["blue"]["stats"]["boost"][types[i]] + ' '  + types[i] + '</h5></center>';
+            var tooltipHTML = '<center><h5>' + gameData["blue"]["stats"]["boost"][types[i]] + ' '  + ' Seconds</h5></center>';
                 //var tooltipHTML = '';
             players.forEach( (d) => {
-                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + ' </b></p>';
+                tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + '</b></p>';
             });
 
             globalApplicationState.players.AddTooltipHandler.call(this, tooltipHTML, rectFiltered);
