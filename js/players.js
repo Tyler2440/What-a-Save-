@@ -305,21 +305,23 @@ class Players {
     FillBeeSwarmChart(data) {
         let beeSvg = d3.select("#beeswarm-chart");
         
-        beeSvg.append("line")
-            .attr("x1", 30)
-            .attr("x2", 30)
-            .attr("y1", 10)
-            .attr("y2", 200)
-            .style("stroke", "black")
-            .style("stroke-width", 1);
+        // beeSvg.append("line")
+        //     .attr("x1", 30)
+        //     .attr("x2", 30)
+        //     .attr("y1", 10)
+        //     .attr("y2", 200)
+        //     .style("stroke", "black")
+        //     .style("stroke-width", 1);
 
-        beeSvg.append("line")
-            .attr("x1", 30)
-            .attr("x2", 650)
-            .attr("y1", 200)
-            .attr("y2", 200)
-            .style("stroke", "black")
-            .style("stroke-width", 1);
+        // beeSvg.append("line")
+        //     .attr("x1", 30)
+        //     .attr("x2", 750)
+        //     .attr("y1", 200)
+        //     .attr("y2", 200)
+        //     .style("stroke", "black")
+        //     .style("stroke-width", 1);
+
+        
 
         let players = new Set();
         data.forEach(function (game) {
@@ -339,9 +341,30 @@ class Players {
 
         let swarmData = [];
         let playersObj = this;
+        let maxWL = 0; 
+        let minWL = 1000000000;
+        let maxTotal = 9;
 
         players.forEach(function(player) {
             let winData = playersObj.GetWinLoss(data, player);
+
+            if (winData.total < 9)
+            {
+                return;
+            }
+
+            if (winData.ratio > maxWL)
+            {
+                maxWL = winData.ratio;
+            }
+
+            if (winData.ratio < minWL) {
+                minWL = winData.ratio;
+            }
+
+            if (winData.total > maxTotal) {
+                maxTotal = winData.total;
+            }
 
             swarmData.push({
                 player: player, 
@@ -350,10 +373,90 @@ class Players {
             });
         });
 
-        swarmData = swarmData.filter(d => d.total >= 5);
+        swarmData = swarmData.filter(d => d.total >= 9);
 
-        console.log("Swarmdata: ");
-        console.log(swarmData);
+        // console.log("Swarmdata: ");
+        // console.log(swarmData);
+        // console.log(minWL + " - " + maxWL);
+
+        let xScale = d3.scaleLinear()
+            .domain([minWL - 0.1, maxWL + 0.1])
+            .range([30, 750]);
+        xScale.nice();
+
+        beeSvg.append("g")
+            .attr("transform", "translate(0,35)")
+            .call(d3.axisBottom(xScale));
+
+        let rScale = d3.scaleLinear()
+            .domain([9, maxTotal])
+            .range([4,10]);
+
+        // let c = beeSvg.selectAll("circle")
+        //     .data(swarmData)
+        //     .enter()
+        //     .append("circle")
+        //     .attr('cx', d => xScale(d.wl))
+        //     .attr('cy', 105)
+        //     .attr('r', d => rScale(d.total))
+        //     .attr('stroke', 'black')
+        //     .attr('fill', 'black');
+
+        let object = this;
+        let c = null;
+        swarmData.forEach(function(d) {
+            let id = d.player;
+            c = beeSvg.append("circle")
+                .attr('id', id)
+                .attr('cx', xScale(d.wl))
+                .attr('cy', 105)
+                .attr('r', rScale(d.total))
+                .attr('stroke', 'black')
+                .attr('fill', 'pink');
+
+            let ttHTML = '<h6>' + d.player + '</h6><p>Win/Loss ratio: ' + d.wl + '</p><p>Total games: ' + d.total + '</p>';
+            object.AddTooltipHandler(ttHTML, c);
+
+            c.on("click", function(event, d) {
+                let dropdown = d3.select("#player-select");
+                let name = d3.select(this).attr("id");
+
+                // let index = dropdown.property(name);
+                //console.log(dropdown["_groups"][0][0]);
+                //dropdown.node().value = name;
+                // console.log(name);
+                // dropdown.property('value', name)
+
+                let options = dropdown["_groups"][0][0];
+                let index = 0;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].label == name)
+                    {
+                        index = i;
+                    }
+                }
+                // console.log(index);
+                console.log(dropdown.property('selected'));
+                console.log(dropdown.property('value'));
+
+                //dropdown.property('selected', index);
+
+
+            });
+        });
+
+        // axis ticks
+    //    beeSvg.selectAll("line").append("line")
+    //         .data([-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50])
+    //         .join("line")
+    //         .attr("x1", d => this.xScale(d))
+    //         .attr("x2", d => this.xScale(d))
+    //         .attr("y1", 20)
+    //         .attr("y2", 30)
+    //         .style("stroke", "black")
+    //         .style("stroke-width", 1);
+
+
     }
 
     GetWinLoss(data, player) {
@@ -1657,7 +1760,7 @@ class Players {
             .style("opacity", 0.8)
             .style("position", "absolute")
             .style("visibility", "hidden")
-            .style("padding", "5px")
+            .style("padding", "0px")
             .style("border-radius", "10px");
         
 
@@ -1668,8 +1771,8 @@ class Players {
             })
             .on("mousemove", function (event, d) {
                 tt
-                    .style("top", (event.pageY + 15) + "px")
-                    .style("left", (event.pageX + 15) + "px");
+                    .style("top", (event.pageY + 8) + "px")
+                    .style("left", (event.pageX + 8) + "px");
             })
             .on("mouseout", function () {
                 tt.style("visibility", "hidden");
