@@ -34,6 +34,16 @@ class Players {
             }
         ]
 
+        let aboutUsButton = d3.select(".collapsible");
+        // When aboutUsButton is hovered, change its class to active
+        aboutUsButton.on("mouseover", function() {
+            aboutUsButton.classed("active", true);
+        });
+        // When aboutUsButton is not hovered, change its class to inactive
+        aboutUsButton.on("mouseout", function() {
+            aboutUsButton.classed("active", false);
+        });     
+
         this.AddTableHeaders(this.data);
         this.AddSortingHandlers(this.data);
         this.FillPlayersTable(this.data);
@@ -328,26 +338,28 @@ class Players {
         
 
         let players = new Set();
+        let games = new Set();
         data.forEach(function (game) {
             // let new_player = "";
             if (game["blue"]["players"] != undefined)
             {
                 game["blue"]["players"].forEach(player => players.add(player["name"]));
+                // games.add(game["id"]);
             }
             
-            if (game["orange"]["players"] != undefined && game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
+            else if (game["orange"]["players"] != undefined && game["orange"]["stats"]["core"]["goals"] != game["orange"]["stats"]["core"]["goals_against"])
             {
                 game["orange"]["players"].forEach(player => players.add(player["name"]));
+                
             }
-
-            //players.add(player["name"])
+            games.add(game["id"]);
         });
 
         let swarmData = [];
         let playersObj = this;
         let maxWL = 0; 
         let minWL = 1000000000;
-        let maxTotal = 6;
+        let maxTotal = 5;
 
         let xScale = d3.scaleLinear()
             .domain([-1, 5])
@@ -360,7 +372,7 @@ class Players {
         players.forEach(function(player) {
             let winData = playersObj.GetWinLoss(data, player);
 
-            if (winData.total < 6)
+            if (winData.total < 5)
             {
                 return;
             }
@@ -386,8 +398,7 @@ class Players {
                 y: yScale(winData.total)
             });
         });
-
-        swarmData = swarmData.filter(d => d.total >= 6);
+        swarmData = swarmData.filter(d => d.total >= 5);
 
         xScale = d3.scaleLinear()
             .domain([minWL - 0.1, maxWL])
@@ -494,24 +505,28 @@ class Players {
         let wins = 0;
         let losses = 0;
 
+        let temp = new Set();
         games.forEach(function(game) {
-            let result = playerObj.IsWin(game, player);
-            let win = result[0];
-            let score = result[1];
-            if (win)
+            if (!temp.has(game["id"]))
             {
-                wins++;
-            }
-            else
-            {
-                losses++;
+                let result = playerObj.IsWin(game, player);
+                let win = result[0];
+                let score = result[1];
+                if (win)
+                {
+                    wins++;
+                }
+                else
+                {
+                    losses++;
+                }
+                temp.add(game["id"]);
             }
         });
-
         if (losses == 0) {
             losses = 1;
         }
-        let ratio = wins / losses;
+        let ratio = Math.round((wins / losses)*100)/100;
         return {
             ratio: ratio, 
             total: (wins + losses)
@@ -2005,7 +2020,7 @@ class Players {
         svg.append("text")
         .attr("x", 140)
         .attr("y", 485)
-        .text("Score")
+        .text("Score");
 
         // Orange
         let orangeScoreData = gameData["orange"]["stats"]["core"]["score"];
@@ -2304,7 +2319,7 @@ class Players {
 
         //tooltip html
         let players = this.orangePlayerData;
-        let ttHTMLOrange = '<center><h5>' + gameData["orange"]["stats"]["boost"]["bpm"] + ' '  + ' BPM</h5></center>';
+        let ttHTMLOrange = '<center><h5>' + Math.round(gameData["orange"]["stats"]["boost"]["bpm"]*100)/100 + ' '  + ' BPM</h5></center>';
             //var tooltipHTML = '';
         players.forEach( (d) => {
             ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["bpm"] + '</b></p>';
@@ -2319,7 +2334,7 @@ class Players {
 
         //tooltip html
         players = this.bluePlayerData;
-        let ttHTMLBlue = '<center><h5>' + gameData["blue"]["stats"]["boost"]["bpm"] + ' '  + ' BPM</h5></center>';
+        let ttHTMLBlue = '<center><h5>' + Math.round(gameData["blue"]["stats"]["boost"]["bpm"]*100)/100 + ' '  + ' BPM</h5></center>';
             //var tooltipHTML = '';
         players.forEach( (d) => {
             ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["bpm"] + '</b></p>';
@@ -2375,12 +2390,11 @@ class Players {
 
         //tooltip html
         let players = this.orangePlayerData;
-        let ttHTMLOrange = '<center><h5>' + gameData["orange"]["stats"]["boost"]["avg_amount"] + ' '  + ' Boost</h5></center>';
+        let ttHTMLOrange = '<center><h5>' + Math.round(gameData["orange"]["stats"]["boost"]["avg_amount"]*100)/100 + ' '  + ' Boost</h5></center>';
             //var tooltipHTML = '';
         players.forEach( (d) => {
             ttHTMLOrange += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["avg_amount"] + '</b></p>';
         });
-
 
         
         let bRect = svg.append("rect")
@@ -2392,7 +2406,7 @@ class Players {
 
         //tooltip html
         players = this.bluePlayerData;
-        let ttHTMLBlue = '<center><h5>' + gameData["blue"]["stats"]["boost"]["avg_amount"] + ' '  + ' Boost</h5></center>';
+        let ttHTMLBlue = '<center><h5>' + Math.round(gameData["blue"]["stats"]["boost"]["avg_amount"]*100)/100 + ' '  + ' Boost</h5></center>';
             //var tooltipHTML = '';
         players.forEach( (d) => {
             ttHTMLBlue += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"]["avg_amount"] + '</b></p>';
@@ -2488,7 +2502,7 @@ class Players {
                 return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "orange";
             });
 
-            var tooltipHTML = '<center><h5>' + gameData["orange"]["stats"]["boost"][types[i]] + ' '  + ' Seconds</h5></center>';
+            var tooltipHTML = '<center><h5>' + Math.round(gameData["orange"]["stats"]["boost"][types[i]]*100)/100 + ' '  + ' Seconds</h5></center>';
                 //var tooltipHTML = '';
             players.forEach( (d) => {
                 tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + '</b></p>';
@@ -2542,7 +2556,7 @@ class Players {
                 return d3.select(this).attr("type") == types[i] && d3.select(this).attr("team") == "blue";
             });
 
-            var tooltipHTML = '<center><h5>' + gameData["blue"]["stats"]["boost"][types[i]] + ' '  + ' Seconds</h5></center>';
+            var tooltipHTML = '<center><h5>' + Math.round(gameData["blue"]["stats"]["boost"][types[i]]*100)/100 + ' '  + ' Seconds</h5></center>';
                 //var tooltipHTML = '';
             players.forEach( (d) => {
                 tooltipHTML += '<p>' + d["name"] + ': <b>' + d["stats"]["boost"][types[i]] + '</b></p>';
