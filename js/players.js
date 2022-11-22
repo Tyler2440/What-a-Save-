@@ -1797,11 +1797,11 @@ class Players {
 
     AddGameCoreStatsCharts(data) {          
         d3.select("#game-visualization-div").style("display", "");
-        d3.select("#stat-visualization-div").style("display", ""); //margin left 400
+        d3.select("#stat-visualization-div").style("display", "").style("margin-left", "400px");
         d3.select("#game-visualizations").style("position", "");
         d3.select("#stat-list").style("margin-top", "0px");
         
-        d3.select("#core-stats").style("display", "").style("margin-left", "400px"); //margin left 400
+        d3.select("#core-stats").style("display", "").style("margin-left", "400px");
         d3.select("#score-stats").style("display", "");
         d3.select("#shotpercentage-stats").style("display", "");
         d3.select("#demos-stats").style("display", "");
