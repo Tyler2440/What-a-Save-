@@ -33,8 +33,6 @@ class Players {
                 key: 'saves'
             }
         ]
-        
-        console.log(data);
 
         this.AddTableHeaders(this.data);
         this.AddSortingHandlers(this.data);
@@ -143,7 +141,6 @@ class Players {
     }
 
     FillBubbleChart(data, playerName) {
-        console.log("WOOOOWEEEEEE bubble time bb");
         let svg = d3.select("#bubble-chart");
         let groups = ["Win", "Loss"];
     
@@ -405,10 +402,6 @@ class Players {
             .domain([9, maxTotal])
             .range([4,10]);
 
-        // console.log("Swarmdata: ");
-        // console.log(swarmData);
-        // console.log(minWL + " - " + maxWL);
-
         let object = this;
         let c = null;
         
@@ -424,7 +417,7 @@ class Players {
             .style("stroke-width", 1);
 
         d3.forceSimulation(swarmData)
-            .force("x", d3.forceX(d => xScale(d.wl)).strength(3))
+            .force("x", d3.forceX(d => xScale(d.wl)).strength(.1))
             .force("y", d3.forceY(d => d.y+105).strength(0.05))
             .force("collide", d3.forceCollide(d => rScale(d.total) + 1))
             .alphaDecay(0)
@@ -448,12 +441,6 @@ class Players {
             c.on("click", function(event, d) {
                 let dropdown = d3.select("#player-select");
                 let name = d3.select(this).attr("id");
-
-                // let index = dropdown.property(name);
-                // console.log(dropdown["_groups"][0][0]);
-                // dropdown.node().value = name;
-                // console.log(name);
-                // dropdown.property('value', name)
 
                 let options = dropdown["_groups"][0][0];
                 let index = 0;
