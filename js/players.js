@@ -696,7 +696,7 @@ class Players {
                 }
                 this.headerData[0].ascending = !this.headerData[0].ascending;
             }
-            else if (d['srcElement'].innerText == "W/L ")
+            else if (d['srcElement'].innerText == "W/L  ")
             {
                 let source = d3.select(d.srcElement);
                 source.classed("sorting", true);
@@ -813,7 +813,7 @@ class Players {
 
                 this.headerData[1].ascending = !this.headerData[1].ascending;
             }
-            else if (d['srcElement'].innerText == "Goals ")
+            else if (d['srcElement'].innerText == "Goals  ")
             {
                 let source = d3.select(d.srcElement);
                 source.classed("sorting", true);
@@ -971,7 +971,7 @@ class Players {
 
                 this.headerData[2].ascending = !this.headerData[2].ascending;
             }
-            else if (d['srcElement'].innerText == "Assists ")
+            else if (d['srcElement'].innerText == "Assists  ")
             {
                 let source = d3.select(d.srcElement);
                 source.classed("sorting", true);
@@ -1130,7 +1130,7 @@ class Players {
 
                 this.headerData[3].ascending = !this.headerData[3].ascending;
             }
-            else if (d['srcElement'].innerText == "Saves ")
+            else if (d['srcElement'].innerText == "Saves  ")
             {
                 let source = d3.select(d.srcElement);
                 source.classed("sorting", true);
