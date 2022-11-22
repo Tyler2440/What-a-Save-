@@ -1,3 +1,7 @@
+* {
+    font-family: 'Poppins', sans-serif;
+    
+}
 body {
     display: block;
 }
@@ -23,33 +27,49 @@ main {
 }
 
 #player-table {
+    fill: #D5D5D5;
     height: 650px;
     width: 900px;
     float: left;
     table-layout: fixed;
-    border-style: solid;
-    background-color: lightgray;
+    background-color: #212122;
     grid-column: 1;
 }
 
+.scrollable::-webkit-scrollbar {
+    width: 1em;
+  }
+   
+  .scrollable::-webkit-scrollbar-thumb {
+    background-color: #D5D5D5;
+    outline: 1px solid #D5D5D5;
+  }
+
 .scrollable {
+    scrollbar-color:yellow;
     float: left;
     display: inline;
-    width: 820px;
+    width: 830px;
     max-height: 650px;
     overflow-y: auto;
     margin-top: 100px;
+    overflow-x: hidden;
+    
 }
 
-#table-headers {
-    background-color: gray;
+th,
+td {
+  padding: 4px 8px;
+}
+
+th {
+  background: #3A3C41 !important;
+  color: white;
 }
 
 #bubble-score {
     height: 800px;
     width: 45%;
-    float: right;
-    position: sticky;
     background-color: aqua;
     padding: 5%
 }
@@ -57,21 +77,18 @@ main {
 #bubble-chart {
     height: 350px;
     width: 800px;
-    float: right;
-    position: sticky;
     display: block;
-    background-color: teal;
-    margin-left: 30px;
+    background-color: #212122;
+    border-width: 50px;
+    color: white;
 }
 
 #beeswarm-chart {
     height: 250px;
     width: 800px;
-    float: right;
-    position: sticky;
     display: block;
-    background-color: white;
-    margin-left: 30px;
+    background-color: #212122;
+    color: white;
 }
 
 #selection-container {
@@ -82,6 +99,11 @@ main {
 
 #table-charts {
     grid-row:1;
+    width: 100%;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 #scoreboards {
@@ -92,7 +114,6 @@ main {
 
 #charts {
     grid-column:2;
-    margin-right: 150px;
 }
 
 .scoreboard {
@@ -134,7 +155,7 @@ main {
 }
 
 .selected {
-    background-color:lightsteelblue !important;
+    background-color:#3A3C41 !important;
 }
 
 .sorting {
@@ -143,17 +164,20 @@ main {
 }
 
 .visual {
-    background-color: darkgray;
+    background-color: #212122;
+    color: white;
+
 }
 
 body {
-    background-color: gray !important;
+    background-color: #0C0C0C !important;
 }
 
 /* CSS */
 button {
+    width: 100px;
   align-items: center;
-  background-image: linear-gradient(135deg, #f34079 40%, #fc894d);
+  background-image: linear-gradient(135deg, #292A2E 40%, #4B4D53);
   border: 0;
   border-radius: 10px;
   box-sizing: border-box;
@@ -186,4 +210,8 @@ button span {
 button:hover span {
   transform: scale(.9);
   opacity: .75;
+}
+
+.bg-dark-custom {
+    background-color: #212122 !important;
 }

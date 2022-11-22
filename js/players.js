@@ -344,12 +344,20 @@ class Players {
         let playersObj = this;
         let maxWL = 0; 
         let minWL = 1000000000;
-        let maxTotal = 9;
+        let maxTotal = 6;
+
+        let xScale = d3.scaleLinear()
+            .domain([-1, 5])
+            .range([30, 750]);
+        
+        let yScale = d3.scaleLinear()
+            .domain([0, 90])
+            .range([0, 50]);
 
         players.forEach(function(player) {
             let winData = playersObj.GetWinLoss(data, player);
 
-            if (winData.total < 9)
+            if (winData.total < 6)
             {
                 return;
             }
@@ -370,52 +378,65 @@ class Players {
             swarmData.push({
                 player: player, 
                 wl: winData.ratio,
-                total: winData.total
+                total: winData.total,
+                x: xScale(winData.ratio),
+                y: yScale(winData.total)
             });
         });
 
-        swarmData = swarmData.filter(d => d.total >= 9);
+        swarmData = swarmData.filter(d => d.total >= 6);
 
-        // console.log("Swarmdata: ");
-        // console.log(swarmData);
-        // console.log(minWL + " - " + maxWL);
-
-        let xScale = d3.scaleLinear()
-            .domain([minWL - 0.1, maxWL + 0.1])
+        xScale = d3.scaleLinear()
+            .domain([minWL - 0.1, maxWL])
             .range([30, 750]);
         xScale.nice();
 
         beeSvg.append("g")
-            .attr("transform", "translate(0,35)")
-            .call(d3.axisBottom(xScale));
+        .attr("transform", "translate(0,35)")
+        .call(d3.axisBottom(xScale));
 
         beeSvg.append("text")
             .attr('x', 300)
             .attr('y', 20)
-            .text("Win / Loss Ratio of Player")
+            .text("Win / Loss Ratio of Player");
 
         let rScale = d3.scaleLinear()
             .domain([9, maxTotal])
             .range([4,10]);
 
-        // let c = beeSvg.selectAll("circle")
-        //     .data(swarmData)
-        //     .enter()
-        //     .append("circle")
-        //     .attr('cx', d => xScale(d.wl))
-        //     .attr('cy', 105)
-        //     .attr('r', d => rScale(d.total))
-        //     .attr('stroke', 'black')
-        //     .attr('fill', 'black');
+        // console.log("Swarmdata: ");
+        // console.log(swarmData);
+        // console.log(minWL + " - " + maxWL);
 
         let object = this;
         let c = null;
+        
+        // axis ticks
+        beeSvg.selectAll("line").append("line")
+            .data([-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50])
+            .join("line")
+            .attr("x1", d => xScale(d))
+            .attr("x2", d => xScale(d))
+            .attr("y1", 20)
+            .attr("y2", 30)
+            .style("stroke", "black")
+            .style("stroke-width", 1);
+
+        d3.forceSimulation(swarmData)
+            .force("x", d3.forceX(d => xScale(d.wl)).strength(3))
+            .force("y", d3.forceY(d => d.y+105).strength(0.4))
+            .force("collide", d3.forceCollide(d => rScale(d.total) + 1))
+            .alphaDecay(0)
+            .alpha(0.3)
+            .tick(1000)
+            .stop();
+
         swarmData.forEach(function(d) {
             let id = d.player;
             c = beeSvg.append("circle")
                 .attr('id', id)
                 .attr('cx', xScale(d.wl))
-                .attr('cy', 105)
+                .attr('cy', d.y)
                 .attr('r', rScale(d.total))
                 .attr('stroke', 'black')
                 .attr('fill', 'pink');
@@ -449,19 +470,6 @@ class Players {
                 globalApplicationState.players.FillBubbleChart(data, name);
             });
         });
-
-        // axis ticks
-    //    beeSvg.selectAll("line").append("line")
-    //         .data([-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50])
-    //         .join("line")
-    //         .attr("x1", d => this.xScale(d))
-    //         .attr("x2", d => this.xScale(d))
-    //         .attr("y1", 20)
-    //         .attr("y2", 30)
-    //         .style("stroke", "black")
-    //         .style("stroke-width", 1);
-
-
     }
 
     GetWinLoss(data, player) {
@@ -1328,11 +1336,11 @@ class Players {
             .on("mouseover", function() {
                 let row = d3.select(this).select("svg");
 
-                row.style("background-color", "white");
+                row.style("background-color", "#292A2E");
             })
             .on("mouseout", function() {
                 let row = d3.select(this).select("svg");
-                row.style("background-color", "lightgray");
+                row.style("background-color", "#212122");
             })
             .on("click", this.RowClickHandler);
         
@@ -1789,7 +1797,7 @@ class Players {
 
     AddGameCoreStatsCharts(data) {          
         d3.select("#game-visualization-div").style("display", "");
-        d3.select("#stat-visualization-div").style("display", "").style("margin-left", "400px"); //margin left 400
+        d3.select("#stat-visualization-div").style("display", ""); //margin left 400
         d3.select("#game-visualizations").style("position", "");
         d3.select("#stat-list").style("margin-top", "0px");
         
