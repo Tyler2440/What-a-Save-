@@ -1809,6 +1809,7 @@ class Players {
         d3.select("#stat-visualization-div").style("display", "").style("margin-left", "400px");
         d3.select("#game-visualizations").style("position", "");
         d3.select("#stat-list").style("margin-top", "0px");
+        d3.select("#stats-text").text("Core stats");
         
         d3.select("#core-stats").style("display", "").style("margin-left", "400px");
         d3.select("#score-stats").style("display", "");
@@ -2255,6 +2256,7 @@ class Players {
     AddBoostStatsCharts(data) {
         d3.select("#game-visualizations").style("position", "absolute");
         d3.select("#stat-list").style("margin-top", "440px");
+        d3.select("#stats-text").text("Boost stats");
         // Hide other svgs
         d3.select("#core-stats").style("display", "none");
         d3.select("#score-stats").style("display", "none");
