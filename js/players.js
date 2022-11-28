@@ -164,6 +164,12 @@ class Players {
         .text("List of Games Played by " + playerName)
         .style("fill", "white");
 
+        svg.append("text")
+        .text("Score")
+        .style("fill", "white")
+        .attr("x", 390)
+        .attr("y", 340);
+
         let winData = [];
         let lossData = [];
         let playersObj = this;
@@ -597,7 +603,6 @@ class Players {
         .attr("id", "player-select")
         .attr("label", "Select Player: ")
         .style("margin-top", "50px");
-
 
         let playerData = [];
         let gameSet = new Set();
