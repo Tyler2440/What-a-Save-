@@ -1954,7 +1954,8 @@ class Players {
         // Select the svg
         let svg = d3.select("#core-stats")
         .attr("width", "1100px")
-        .attr("height", "430px");
+        .attr("height", "430px")
+        .style("margin-left", "420px");
 
         // Remove all previous elements
         svg.selectAll("rect").remove();
@@ -2424,7 +2425,8 @@ class Players {
         // Select svg
         let svg = d3.select("#team-bpm-stats")
         .attr("width", "500px")
-        .attr("height", "430px");
+        .attr("height", "430px")
+        .style("margin-left", "50px");
 
         // Remove all previous elements
         svg.selectAll("rect").remove();
